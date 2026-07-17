@@ -1,6 +1,9 @@
 # Local scratch / temporary files (not versioned)
 .temp/
 
+# Claude Code runtime/session state (machine- and session-specific, not project config)
+.claude/scheduled_tasks.lock
+
 # Personal/marketing material (used for external posts, not part of the OSS repo)
 /artigo-bitchicken/
 
