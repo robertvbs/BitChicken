@@ -48,6 +48,8 @@ jobs:
         working-directory: RW.BC.Crypto
       - run: npm run validate-upgrade
         working-directory: RW.BC.Crypto
+      - run: npm ci
+        working-directory: RW.BC.DApp
       - run: node ../RW.BC.DApp/scripts/check-abi-drift.mjs
         working-directory: RW.BC.Crypto
 
