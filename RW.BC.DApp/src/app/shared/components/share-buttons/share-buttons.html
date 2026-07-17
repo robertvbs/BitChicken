@@ -1,0 +1,9 @@
+<p-menu #menu [model]="buildMenuItems()" [popup]="true" appendTo="body" />
+<p-button
+  [label]="'share.cta' | translate"
+  icon="pi pi-share-alt"
+  [outlined]="true"
+  severity="secondary"
+  size="small"
+  (onClick)="menu.toggle($event)"
+/>

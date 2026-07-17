@@ -1,0 +1,133 @@
+<div class="flex flex-col gap-8">
+  @if (hasReferral()) {
+    <p-tag severity="success" [value]="'store.referralApplied' | translate" styleClass="mb-2" />
+  }
+
+  @if (!web3.isConnected()) {
+    <p-message severity="warn" icon="pi pi-wallet" [text]="'store.connectPrompt' | translate" styleClass="w-full" />
+  }
+
+  <section>
+    <h2 class="bc-section-title mb-4">{{ 'store.normal' | translate }}</h2>
+    <p class="text-surface-600 dark:text-surface-300 mb-4">{{ 'store.normalHint' | translate }}</p>
+    @if (loading()) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        @for (_ of skeletons; track $index) {
+          <p-skeleton height="13rem" borderRadius="0.95rem" />
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        @for (tier of pagedTiers(); track tier.index) {
+          <app-egg-card
+            [level]="tier.index + 1"
+            [levelLabel]="'store.tier' | translate"
+            [price]="formatPrice(tier.price)"
+            [fiat]="fiatPrice(tier.price)"
+            [ctaLabel]="'store.obtain' | translate"
+            [ctaDisabled]="!web3.isConnected()"
+            (cta)="selectTier(tier)"
+          />
+        }
+      </div>
+      @if (showTiersPaginator()) {
+        <p-paginator
+          [first]="tiersFirst()"
+          [rows]="PAGE_SIZE"
+          [totalRecords]="tiers().length"
+          (onPageChange)="onTiersPageChange($event)"
+          styleClass="mt-3"
+        />
+      }
+    }
+  </section>
+</div>
+
+<app-transaction-dialog
+  [(visible)]="confirmVisible"
+  headerKey="store.confirmTitle"
+  [phase]="txPhase()"
+  ctaKey="store.confirmObtain"
+  ctaIcon="pi pi-shopping-bag"
+  [cancelable]="true"
+  [ctaDisabled]="!nftNameValid()"
+  (confirm)="confirmObtain()"
+  (cancel)="cancelObtain()"
+>
+  @if (selectedTier(); as tier) {
+    <div class="flex justify-between">
+      <span class="text-surface-500">{{ 'store.tier' | translate }}</span>
+      <span class="font-bold">{{ ('store.tier' | translate) + ' ' + (tier.index + 1) }}</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-surface-500">{{ 'store.price' | translate }}</span>
+      <span class="font-bold text-primary">{{ formatPrice(tier.price) }} BNB</span>
+    </div>
+    @if (hasReferral()) {
+      <div class="flex justify-between">
+        <span class="text-surface-500">{{ 'store.referral' | translate }}</span>
+        <p-tag severity="success" [value]="'#' + referrerCode().toString()" />
+      </div>
+    }
+    <div>
+      <label class="block text-sm font-bold mb-2">{{ 'store.nameLabel' | translate }}</label>
+      <input
+        pInputText
+        type="text"
+        maxlength="24"
+        [placeholder]="'store.namePlaceholder' | translate"
+        [ngModel]="nftName()"
+        (ngModelChange)="nftName.set($event)"
+        class="w-full"
+      />
+      <small class="block mt-1 text-surface-500">{{ 'store.nameHint' | translate }}</small>
+    </div>
+  }
+</app-transaction-dialog>
+
+<p-dialog
+  [(visible)]="hatching"
+  [header]="'store.hatchingTitle' | translate"
+  [modal]="true"
+  [closable]="false"
+  styleClass="w-full max-w-xs"
+>
+  <div class="flex flex-col items-center gap-5 py-4">
+    <app-egg-hatch />
+    <div class="flex flex-col items-center gap-2">
+      <app-chicken-spinner [label]="'store.hatchingTitle' | translate" />
+      <p class="text-surface-500 text-center">{{ 'store.hatchingDesc' | translate }}</p>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="revealVisible"
+  [header]="'store.revealTitle' | translate"
+  [modal]="true"
+  styleClass="w-full max-w-sm bc-rainbow-modal"
+>
+  <div class="flex flex-col items-center gap-4 py-2">
+    <div class="bc-reveal">
+      <app-item-card
+        class="bc-reveal__card"
+        [name]="revealName()"
+        [imageUrl]="artUrl(revealArtURI())"
+        [rarity]="revealRarity()"
+        [health]="revealHealth()"
+        [skill]="revealSkill()"
+        [morale]="revealMorale()"
+        [editionName]="revealEditionName()"
+        [tokenId]="forgeResult()?.tokenId ?? null"
+        (addToWallet)="onAddToWallet($event)"
+      />
+    </div>
+  </div>
+  <div class="pt-3">
+    <p-button
+      [label]="'store.revealClose' | translate"
+      class="w-full"
+      (onClick)="closeReveal()"
+    />
+  </div>
+</p-dialog>

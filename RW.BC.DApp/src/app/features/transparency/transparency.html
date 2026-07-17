@@ -1,0 +1,85 @@
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="bc-title text-primary mb-1">{{ 'transparency.title' | translate }}</h1>
+      <p class="text-surface-600 dark:text-surface-300">{{ 'transparency.subtitle' | translate }}</p>
+    </div>
+    <p-button [label]="'common.refresh' | translate" icon="pi pi-refresh" severity="secondary" (onClick)="load()" />
+  </div>
+
+  @if (loading() && !summary()) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <p-skeleton height="6rem" />
+      }
+    </div>
+    <p-skeleton height="20rem" />
+  } @else {
+    @if (summary(); as s) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <p-card styleClass="text-center">
+          <div class="text-2xl font-bold text-primary">{{ s.salesCount }}</div>
+          <div class="text-sm text-surface-500 mt-1">{{ 'transparency.totalSales' | translate }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+          <div class="text-2xl font-bold text-primary">{{ formatVolume(s.totalVolume) }}</div>
+          <div class="text-sm text-surface-500 mt-1">{{ 'transparency.totalVolume' | translate }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+          <div class="text-2xl font-bold text-primary">{{ s.nftCount }}</div>
+          <div class="text-sm text-surface-500 mt-1">{{ 'transparency.nftCount' | translate }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+          <div class="text-2xl font-bold text-primary">{{ s.editionCount }}</div>
+          <div class="text-sm text-surface-500 mt-1">{{ 'transparency.editionCount' | translate }}</div>
+        </p-card>
+        <p-card styleClass="text-center">
+          <div class="text-2xl font-bold text-primary">{{ formatVolume(s.totalBcknTransferred) }}</div>
+          <div class="text-sm text-surface-500 mt-1">{{ 'transparency.bcknTransferred' | translate }}</div>
+        </p-card>
+      </div>
+    }
+
+    <div>
+      <h2 class="text-lg font-bold mb-3">{{ 'transparency.recentSales' | translate }}</h2>
+      @if (loadError() && sales().length === 0) {
+        <p-message severity="error" [text]="'transparency.loadError' | translate" styleClass="w-full" />
+      } @else if (!loading() && sales().length === 0) {
+        <div class="bc-empty">
+          <i class="pi pi-inbox text-4xl"></i>
+          <p>{{ 'transparency.noSales' | translate }}</p>
+        </div>
+      } @else {
+        <p-table [value]="sales()" [loading]="loading()" styleClass="p-datatable-sm">
+          <ng-template #header>
+            <tr>
+              <th>{{ 'transparency.colTokenId' | translate }}</th>
+              <th>{{ 'transparency.colSeller' | translate }}</th>
+              <th>{{ 'transparency.colBuyer' | translate }}</th>
+              <th>{{ 'transparency.colPrice' | translate }}</th>
+              <th>{{ 'transparency.colBlock' | translate }}</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-sale>
+            <tr>
+              <td class="font-mono">#{{ sale.tokenId }}</td>
+              <td class="font-mono text-sm">{{ shortenAddress(sale.seller) }}</td>
+              <td class="font-mono text-sm">{{ shortenAddress(sale.buyer) }}</td>
+              <td>{{ formatPrice(sale.price) }} BNB</td>
+              <td class="text-surface-500">{{ sale.blockNumber }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+        @if (totalSales() > PAGE_SIZE) {
+          <p-paginator
+            [first]="pageFirst()"
+            [rows]="PAGE_SIZE"
+            [totalRecords]="totalSales()"
+            (onPageChange)="onPageChange($event)"
+            styleClass="mt-3"
+          />
+        }
+      }
+    </div>
+  }
+</div>

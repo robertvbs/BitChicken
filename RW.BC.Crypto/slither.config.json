@@ -1,0 +1,20 @@
+{
+  "filter_paths": "node_modules|lib|foundry-test|contracts/mocks",
+  "exclude_dependencies": true,
+  "exclude_informational": false,
+  "exclude_low": false,
+  "detectors_to_exclude": [
+    "assembly",
+    "naming-convention",
+    "low-level-calls",
+    "timestamp",
+    "divide-before-multiply",
+    "calls-loop",
+    "reentrancy-benign",
+    "reentrancy-events",
+    "cyclomatic-complexity",
+    "missing-inheritance",
+    "incorrect-equality",
+    "unused-return"
+  ]
+}

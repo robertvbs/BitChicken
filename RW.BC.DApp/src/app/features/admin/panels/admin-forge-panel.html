@@ -1,0 +1,39 @@
+<div class="flex flex-col gap-6 pt-4">
+
+  <p-fieldset [legend]="'admin.nft.tierPrices' | translate" [toggleable]="true">
+    <p class="text-sm text-surface-500 mb-3">{{ 'admin.nft.tierPricesHint' | translate }}</p>
+    <div class="grid grid-cols-5 gap-2 mb-4">
+      @for (i of [0,1,2,3,4,5,6,7,8,9]; track i) {
+        <div class="flex flex-col gap-1">
+          <label class="text-xs text-surface-500">T{{ i + 1 }}</label>
+          <p-inputnumber [ngModel]="getTierPriceInput(i)" (ngModelChange)="updateTierPriceInput(i, $event ?? 0)" [minFractionDigits]="0" [maxFractionDigits]="8" />
+        </div>
+      }
+    </div>
+    <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.nft.setTierPrices" [disabled]="isBusy()" (confirm)="updateTierPrices()" />
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.forge.ownership' | translate">
+    <div class="flex flex-col gap-3">
+      <p class="text-sm">{{ 'admin.forge.currentOwner' | translate }}: <code class="font-mono text-xs">{{ forgeOwner() || '-' }}</code></p>
+      @if (isForgeOwner()) {
+        <p-tag severity="success" [value]="'admin.forge.alreadyOwner' | translate" />
+      } @else {
+        <p-button
+          [label]="'admin.forge.acceptOwnership' | translate"
+          icon="pi pi-key"
+          severity="warn"
+          [disabled]="isBusy()"
+          (onClick)="forgeAcceptOwnership()"
+        />
+      }
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.forge.controls' | translate" [toggleable]="true">
+    <div class="flex flex-wrap gap-3">
+      <p-button [label]="'admin.withdraw' | translate" icon="pi pi-wallet" severity="info" [disabled]="isBusy()" (onClick)="confirmForgeWithdraw()" />
+    </div>
+  </p-fieldset>
+
+</div>

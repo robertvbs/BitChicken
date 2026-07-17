@@ -1,0 +1,112 @@
+.bc-pair {
+  position: relative;
+}
+
+.bc-pair__card--ideal {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bc-neon-lime) 40%, transparent),
+    0 0 24px -10px var(--bc-neon-lime);
+}
+
+.bc-pair__male {
+  color: color-mix(in srgb, var(--bc-neon-cyan) 80%, currentColor);
+  font-weight: 600;
+}
+
+.bc-pair__female {
+  color: color-mix(in srgb, var(--bc-neon-magenta) 80%, currentColor);
+  font-weight: 600;
+}
+
+.bc-pair__heart {
+  color: color-mix(in srgb, var(--bc-neon-magenta) 70%, currentColor);
+}
+
+.bc-harvest {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.bc-harvest__amount {
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--bc-neon-lime);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--bc-neon-lime) 70%, transparent);
+  animation: bc-harvest-rise 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.bc-grain {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 9px;
+  border-radius: 40% 40% 50% 50%;
+  background: var(--bc-neon-orange);
+  box-shadow: 0 0 6px -1px var(--bc-neon-orange);
+  opacity: 0;
+  animation: bc-grain-fly 1.2s ease-out forwards;
+}
+
+.bc-grain--1 { animation-delay: 0.02s; --gx: -54px; --gy: -34px; }
+.bc-grain--2 { animation-delay: 0.06s; --gx: 48px; --gy: -42px; }
+.bc-grain--3 { animation-delay: 0.1s; --gx: -30px; --gy: -56px; }
+.bc-grain--4 { animation-delay: 0.05s; --gx: 34px; --gy: -52px; }
+.bc-grain--5 { animation-delay: 0.12s; --gx: -68px; --gy: -18px; }
+.bc-grain--6 { animation-delay: 0.08s; --gx: 64px; --gy: -22px; }
+
+@keyframes bc-harvest-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46px) scale(1);
+  }
+}
+
+@keyframes bc-grain-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))) scale(1) rotate(140deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bc-grain {
+    animation: none;
+    opacity: 0;
+  }
+  .bc-harvest__amount {
+    animation: bc-harvest-fade 0.6s linear forwards;
+  }
+}
+
+@keyframes bc-harvest-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

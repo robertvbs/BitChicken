@@ -1,0 +1,8 @@
+
+# Coverage artifacts (locais)
+coverage-results/
+coverage-merged/
+
+# Secrets / local environment overrides — never commit real values
+.env
+.env.*

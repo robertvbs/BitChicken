@@ -1,0 +1,9 @@
+<p-button
+  [icon]="theme.isDark() ? 'pi pi-sun' : 'pi pi-moon'"
+  [rounded]="true"
+  [text]="true"
+  severity="secondary"
+  [ariaLabel]="(theme.isDark() ? 'theme.toLight' : 'theme.toDark') | translate"
+  [attr.aria-pressed]="theme.isDark()"
+  (onClick)="theme.toggle()"
+/>

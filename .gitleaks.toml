@@ -1,0 +1,16 @@
+title = "Config do gitleaks — BitChicken"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Falsos positivos conhecidos: constantes públicas, não segredos (keyHash do VRF, storage slots ERC-7201, endereços de contrato, a chave privada de teste pública e notória do Anvil/Foundry)."
+regexes = [
+  '''0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80''', # chave privada de teste publica do Anvil/Foundry (account[0] do mnemonic "test test ... junk")
+  '''0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc''', # keyHash publico do Chainlink VRF v2.5 (gas lane da BSC)
+  '''0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11f81c5e7c3eb9e2b71b''', # keyHash arbitrario de fixture de teste (RW.BC.DApp/src/testing/web3-fakes.ts)
+  '''0x2e076ce1b568fb1782924f5ed1d16e498b0e44798ce784242508b88ccb5d9a00''', # storage slot ERC-7201 namespaced (RW.BC.Crypto/contracts/bitchicken-token.sol)
+]
+paths = [
+  '''RW\.BC\.DApp/src/environments/environment\.local\.example\.ts''', # enderecos deterministicos de contrato do deploy local (publicos, nao segredo)
+]

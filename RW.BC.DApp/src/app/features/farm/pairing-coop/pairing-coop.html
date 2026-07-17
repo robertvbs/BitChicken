@@ -1,0 +1,169 @@
+<section class="bc-coop">
+  <h2 class="bc-section-title mb-1">{{ 'farm.coopTitle' | translate }}</h2>
+  <p class="text-sm text-surface-500 mb-4">{{ 'farm.coopHint' | translate }}</p>
+
+  <div cdkDropListGroup class="flex flex-col gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div
+        cdkDropList
+        [cdkDropListEnterPredicate]="maleEnterPredicate"
+        (cdkDropListDropped)="onDropMale($event)"
+        class="bc-nest bc-nest--male"
+        [class.bc-nest--filled]="male() !== null"
+        role="group"
+        [attr.aria-label]="'farm.maleSlot' | translate"
+      >
+        <span class="bc-nest__tag">♂ {{ 'farm.maleSlot' | translate }}</span>
+        @if (male(); as m) {
+          <div class="bc-nest__filled">
+            <div class="bc-nest__card">
+              <app-item-card
+                [name]="cardName(m)"
+                [imageUrl]="artUrl(m.artURI)"
+                [rarity]="m.rarity"
+                [health]="m.attributes.health"
+                [skill]="m.attributes.skill"
+                [morale]="m.attributes.morale"
+                [gender]="m.attributes.gender"
+                [editionName]="m.editionName"
+              />
+            </div>
+            <p-button
+              [label]="'farm.remove' | translate"
+              icon="pi pi-times"
+              severity="danger"
+              [text]="true"
+              size="small"
+              styleClass="bc-nest__remove"
+              [attr.aria-label]="'farm.clearMaleSlot' | translate"
+              (onClick)="onClearMale()"
+            />
+          </div>
+        } @else {
+          <div class="bc-nest__empty">
+            <i class="pi pi-plus"></i>
+            <span>{{ 'farm.maleSlotEmpty' | translate }}</span>
+          </div>
+        }
+      </div>
+
+      <div
+        cdkDropList
+        [cdkDropListEnterPredicate]="femaleEnterPredicate"
+        (cdkDropListDropped)="onDropFemale($event)"
+        class="bc-nest bc-nest--female"
+        [class.bc-nest--filled]="female() !== null"
+        role="group"
+        [attr.aria-label]="'farm.femaleSlot' | translate"
+      >
+        <span class="bc-nest__tag">♀ {{ 'farm.femaleSlot' | translate }}</span>
+        @if (female(); as f) {
+          <div class="bc-nest__filled">
+            <div class="bc-nest__card">
+              <app-item-card
+                [name]="cardName(f)"
+                [imageUrl]="artUrl(f.artURI)"
+                [rarity]="f.rarity"
+                [health]="f.attributes.health"
+                [skill]="f.attributes.skill"
+                [morale]="f.attributes.morale"
+                [gender]="f.attributes.gender"
+                [editionName]="f.editionName"
+              />
+            </div>
+            <p-button
+              [label]="'farm.remove' | translate"
+              icon="pi pi-times"
+              severity="danger"
+              [text]="true"
+              size="small"
+              styleClass="bc-nest__remove"
+              [attr.aria-label]="'farm.clearFemaleSlot' | translate"
+              (onClick)="onClearFemale()"
+            />
+          </div>
+        } @else {
+          <div class="bc-nest__empty">
+            <i class="pi pi-plus"></i>
+            <span>{{ 'farm.femaleSlotEmpty' | translate }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (bothPlaced()) {
+      <div class="bc-coop__estimate" [class.bc-coop__estimate--ideal]="ideal()">
+        <div>
+          <p class="text-xs text-surface-500">{{ 'farm.estLabel' | translate }}</p>
+          @if (estimate() === null) {
+            <p-skeleton width="9rem" height="1.5rem" />
+          } @else {
+            <p class="font-bold text-primary text-lg">
+              {{ 'farm.estPerCycle' | translate: { amount: estimateText() } }}
+            </p>
+          }
+        </div>
+        @if (ideal()) {
+          <p-tag severity="success" icon="pi pi-star-fill" [value]="'farm.idealPairBonus' | translate: { mult: multiplierText() }" />
+        } @else {
+          <p-tag severity="secondary" [value]="'farm.standardPair' | translate" />
+        }
+      </div>
+    } @else {
+      <p class="text-sm text-surface-500">{{ guidanceKey() | translate }}</p>
+    }
+
+    <div class="flex justify-end">
+      <app-transaction-widget
+        [phase]="phase()"
+        ctaKey="farm.lodge"
+        ctaIcon="pi pi-home"
+        [disabled]="!canStake()"
+        (confirm)="lodge.emit()"
+      />
+    </div>
+
+    <div>
+      <h3 class="bc-section-title bc-coop__inv-title mb-3">{{ 'farm.myNfts' | translate }}</h3>
+      @if (inventory().length === 0) {
+        <p class="text-surface-600 dark:text-surface-300">{{ 'farm.noNfts' | translate }}</p>
+      } @else {
+        <div
+          cdkDropList
+          [cdkDropListData]="inventory()"
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+        >
+          @for (nft of pagedInventory(); track nft.tokenId) {
+            <div cdkDrag [cdkDragData]="nft" class="bc-coop__drag">
+              <app-item-card
+                [name]="cardName(nft)"
+                [imageUrl]="artUrl(nft.artURI)"
+                [rarity]="nft.rarity"
+                [health]="nft.attributes.health"
+                [skill]="nft.attributes.skill"
+                [morale]="nft.attributes.morale"
+                [gender]="nft.attributes.gender"
+                [editionName]="nft.editionName"
+                [tokenId]="nft.tokenId"
+                [ctaLabel]="'farm.place' | translate"
+                (cta)="placeFromCard(nft)"
+                (addToWallet)="addToWallet.emit($event)"
+              />
+            </div>
+          }
+        </div>
+        @if (showPaginator()) {
+          <p-paginator
+            [first]="inventoryFirst()"
+            [rows]="PAGE_SIZE"
+            [totalRecords]="inventory().length"
+            (onPageChange)="onPageChange($event)"
+            styleClass="mt-3"
+          />
+        }
+      }
+    </div>
+  </div>
+
+  <span class="sr-only" aria-live="polite">{{ liveMessage() }}</span>
+</section>

@@ -1,0 +1,81 @@
+<div class="flex flex-col gap-6 pt-4">
+
+  <p-fieldset [legend]="'admin.nft.royalty' | translate" [toggleable]="true">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.royaltyReceiver' | translate }}</label>
+        <input pInputText [ngModel]="royaltyReceiver()" (ngModelChange)="royaltyReceiver.set($event)" placeholder="0x..." />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.royaltyBps' | translate }}</label>
+        <p-inputnumber [ngModel]="royaltyBps()" (ngModelChange)="royaltyBps.set($event ?? 0)" [min]="0" [max]="10000" />
+      </div>
+      <div>
+        <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.nft.setRoyalty" [disabled]="isBusy()" (confirm)="setRoyalty()" />
+      </div>
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.nft.renamePrice' | translate" [toggleable]="true">
+    <div class="flex gap-4 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.renamePriceLabel' | translate }}</label>
+        <p-inputnumber [ngModel]="renamePrice()" (ngModelChange)="renamePrice.set($event ?? 0)" [min]="0" />
+      </div>
+      <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.nft.setRenamePrice" [disabled]="isBusy()" (confirm)="setRenamePrice()" />
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.nft.referral' | translate" [toggleable]="true">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.referralThresholds' | translate }}</label>
+        <input pInputText [ngModel]="referralThresholds()" (ngModelChange)="referralThresholds.set($event)" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.referralRatesBps' | translate }}</label>
+        <input pInputText [ngModel]="referralRatesBps()" (ngModelChange)="referralRatesBps.set($event)" />
+      </div>
+    </div>
+    <p class="text-xs text-surface-500 mt-1">{{ 'admin.nft.referralLevelsHint' | translate }}</p>
+    <div class="mt-4">
+      <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.nft.setReferralLevels" [disabled]="isBusy()" (confirm)="setReferralLevels()" />
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.nft.forgeAddress' | translate" [toggleable]="true">
+    <div class="flex gap-4 items-end">
+      <div class="flex flex-col gap-1 flex-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.forgeAddressLabel' | translate }}</label>
+        <input pInputText [ngModel]="forgeAddress()" (ngModelChange)="forgeAddress.set($event)" placeholder="0x..." />
+      </div>
+      <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.nft.setForge" [disabled]="isBusy()" (confirm)="setForge()" />
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.nft.ownership' | translate">
+    <div class="flex flex-col gap-3">
+      <p class="text-sm">{{ 'admin.nft.pendingOwner' | translate }}: <code class="font-mono text-xs">{{ nftPendingOwner() || '-' }}</code></p>
+      @if (hasNftPendingOwner()) {
+        <p-button
+          [label]="'admin.nft.acceptOwnership' | translate"
+          icon="pi pi-key"
+          severity="warn"
+          [disabled]="isBusy()"
+          (onClick)="nftAcceptOwnership()"
+        />
+      } @else {
+        <p-message severity="info" [text]="'admin.nft.noPendingOwner' | translate" styleClass="w-full" />
+      }
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.nft.controls' | translate" [toggleable]="true">
+    <div class="flex flex-wrap gap-3">
+      <p-button [label]="'admin.pause' | translate" icon="pi pi-pause" severity="warn" [disabled]="isBusy()" (onClick)="confirmNftPause()" />
+      <p-button [label]="'admin.unpause' | translate" icon="pi pi-play" severity="success" [disabled]="isBusy()" (onClick)="nftUnpause()" />
+      <p-button [label]="'admin.withdraw' | translate" icon="pi pi-wallet" severity="info" [disabled]="isBusy()" (onClick)="confirmNftWithdraw()" />
+    </div>
+  </p-fieldset>
+
+</div>

@@ -1,0 +1,209 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "RW.BC.Crypto/**"
+      - "RW.BC.DApp/**"
+      - "RW.BC.Api/**"
+      - "RW.BC.AppHost/**"
+      - "RW.BC.Indexer/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "RW.BC.Crypto/**"
+      - "RW.BC.DApp/**"
+      - "RW.BC.Api/**"
+      - "RW.BC.AppHost/**"
+      - "RW.BC.Indexer/**"
+      - ".github/workflows/ci.yml"
+
+env:
+  NODE_VERSION: "24.x"
+  DOTNET_VERSION: "10.0.x"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Contratos — RW.BC.Crypto: lint + testes + upgrade-safety + ABI drift
+  # ---------------------------------------------------------------------------
+  crypto:
+    name: Crypto — Lint, Test, Upgrade-safety & ABI drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: RW.BC.Crypto/package-lock.json
+      - run: npm ci
+        working-directory: RW.BC.Crypto
+      - run: npx hardhat compile
+        working-directory: RW.BC.Crypto
+      - run: npm test
+        working-directory: RW.BC.Crypto
+      - run: npm run lint
+        working-directory: RW.BC.Crypto
+      - run: npm run validate-upgrade
+        working-directory: RW.BC.Crypto
+      - run: node ../RW.BC.DApp/scripts/check-abi-drift.mjs
+        working-directory: RW.BC.Crypto
+
+  # ---------------------------------------------------------------------------
+  # Contratos — RW.BC.Crypto: invariantes e cobertura via Foundry
+  # ---------------------------------------------------------------------------
+  crypto-foundry-invariants:
+    name: Crypto — Foundry invariants & coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: RW.BC.Crypto/package-lock.json
+      - run: npm ci
+        working-directory: RW.BC.Crypto
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: git clone --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std
+        working-directory: RW.BC.Crypto
+      - run: npm run test:invariants
+        working-directory: RW.BC.Crypto
+      - run: npm run coverage:forge
+        working-directory: RW.BC.Crypto
+
+  # ---------------------------------------------------------------------------
+  # Contratos — RW.BC.Crypto: análise estática Slither (Docker, falha em high)
+  # ---------------------------------------------------------------------------
+  crypto-slither:
+    name: Crypto — Slither (static analysis)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: RW.BC.Crypto/package-lock.json
+      - run: npm ci
+        working-directory: RW.BC.Crypto
+      - run: git clone --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std
+        working-directory: RW.BC.Crypto
+      - name: Slither (toolbox Docker, framework Foundry, fail em high)
+        run: |
+          set -e
+          docker run --rm --user root \
+            -e FOUNDRY_OUT=out-slither -e FOUNDRY_CACHE_PATH=cache-slither \
+            -v "${{ github.workspace }}/RW.BC.Crypto":/src -w /src \
+            trailofbits/eth-security-toolbox:latest \
+            bash -lc 'slither . --config-file slither.config.json --foundry-out-directory out-slither --fail-high'
+
+  # ---------------------------------------------------------------------------
+  # API — RW.BC.Api: build + testes + cobertura (.NET 10, Testcontainers)
+  # ---------------------------------------------------------------------------
+  api:
+    name: API — Build, Test & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet restore RW.BC.Api.slnx -p:AllowMissingPrunePackageData=true
+        working-directory: RW.BC.Api
+      - run: dotnet build RW.BC.Api.slnx --no-restore -c Release -p:AllowMissingPrunePackageData=true
+        working-directory: RW.BC.Api
+      - name: dotnet test + coverage (Testcontainers)
+        run: >-
+          dotnet test RW.BC.Api.slnx --no-build -c Release -p:AllowMissingPrunePackageData=true
+          --settings coverlet.runsettings
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage-results
+        working-directory: RW.BC.Api
+      - name: Coverage report (resumo)
+        if: always()
+        working-directory: RW.BC.Api
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool || true
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          reportgenerator -reports:"coverage-results/**/coverage.cobertura.xml" -targetdir:coverage-merged -reporttypes:TextSummary || true
+          sed -n '1,12p' coverage-merged/Summary.txt || true
+
+  # ---------------------------------------------------------------------------
+  # Indexer — RW.BC.Indexer: codegen + typecheck + testes (cobertura 100%)
+  # ---------------------------------------------------------------------------
+  indexer:
+    name: Indexer — Codegen, Typecheck & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: RW.BC.Indexer/package-lock.json
+      - run: npm ci
+        working-directory: RW.BC.Indexer
+      - run: npm run codegen
+        working-directory: RW.BC.Indexer
+      - run: npm run typecheck
+        working-directory: RW.BC.Indexer
+      - run: npm run test:cov
+        working-directory: RW.BC.Indexer
+
+  # ---------------------------------------------------------------------------
+  # Segurança — gitleaks (segredos) + npm audit (deps)
+  # ---------------------------------------------------------------------------
+  security-gitleaks:
+    name: Security — gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks detect (histórico)
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo \
+            zricethezav/gitleaks:latest detect --source=/repo --config=/repo/.gitleaks.toml --redact --no-banner --exit-code 1
+
+  security-npm-audit:
+    name: Security — npm audit
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [RW.BC.Crypto, RW.BC.Indexer, RW.BC.DApp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm audit (high — informativo na fase de dev)
+        working-directory: ${{ matrix.project }}
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # dApp — RW.BC.DApp: i18n + lint + testes (cobertura imposta) + build
+  # ---------------------------------------------------------------------------
+  dapp:
+    name: dApp — Lint, Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: RW.BC.DApp/package-lock.json
+      - run: npm ci
+        working-directory: RW.BC.DApp
+      - run: npm run lint:i18n
+        working-directory: RW.BC.DApp
+      - run: npm run lint
+        working-directory: RW.BC.DApp
+      - run: npm test
+        working-directory: RW.BC.DApp
+      - run: npm run build
+        working-directory: RW.BC.DApp

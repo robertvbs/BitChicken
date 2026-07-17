@@ -1,0 +1,74 @@
+<div class="bc-pair">
+  @if (harvestAmount() !== null) {
+    <div class="bc-harvest" aria-hidden="true">
+      <span class="bc-harvest__amount" (animationend)="harvestDone.emit()">+{{ harvestText() }} BCKN</span>
+      @for (g of grains; track g) {
+        <span class="bc-grain bc-grain--{{ g }}"></span>
+      }
+    </div>
+  }
+  <p-card [styleClass]="pair().matched ? 'bc-pair__card bc-pair__card--ideal' : 'bc-pair__card'">
+    <div class="flex flex-col gap-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p class="font-bold mb-1">{{ 'farm.pair' | translate }} #{{ pair().pairId }}</p>
+          <p class="text-sm text-surface-500 flex items-center gap-1.5">
+            <span class="bc-pair__male">♂ #{{ pair().maleId.toString() }}</span>
+            <span class="bc-pair__heart">♥</span>
+            <span class="bc-pair__female">♀ #{{ pair().femaleId.toString() }}</span>
+          </p>
+        </div>
+        @if (pair().matched) {
+          <p-tag severity="success" icon="pi pi-star-fill" [value]="'farm.idealBadge' | translate" />
+        } @else {
+          <p-tag severity="secondary" [value]="'farm.standardBadge' | translate" />
+        }
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-xs text-surface-500">{{ 'farm.pendingProduction' | translate }}</p>
+          <p class="font-bold text-primary text-lg">{{ pendingText() }} BCKN</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-surface-500">{{ 'farm.cycleProduction' | translate }}</p>
+          @if (estimateText()) {
+            <p class="font-bold">~ {{ estimateText() }} BCKN</p>
+          } @else {
+            <p class="font-bold">—</p>
+          }
+        </div>
+      </div>
+
+      <div>
+        <p-progressbar [value]="cycleProgress()" styleClass="h-2" />
+        <p class="text-xs text-surface-500 mt-1">
+          @if (canClaim()) {
+            <span class="text-primary font-medium">{{ 'farm.readyToCollect' | translate }}</span>
+          } @else {
+            {{ 'farm.unlockIn' | translate }}: {{ timeUntilUnlock() }}
+          }
+        </p>
+      </div>
+
+      <div class="flex gap-2 flex-wrap justify-end">
+        <p-button
+          [label]="'farm.collect' | translate"
+          icon="pi pi-bolt"
+          size="small"
+          [disabled]="!canClaim()"
+          [loading]="claiming()"
+          (onClick)="claim.emit()"
+        />
+        <p-button
+          [label]="'farm.unlodge' | translate"
+          icon="pi pi-times"
+          severity="secondary"
+          size="small"
+          [loading]="unstaking()"
+          (onClick)="unstake.emit()"
+        />
+      </div>
+    </div>
+  </p-card>
+</div>

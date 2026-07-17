@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "primeng": {
+      "command": "bash",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/.claude/mcp/primeng/run.sh"]
+    },
+    "OpenZeppelinSolidityContracts": {
+      "command": "npx",
+      "args": ["-y", "@openzeppelin/contracts-mcp"]
+    },
+    "microsoft-learn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    }
+  }
+}

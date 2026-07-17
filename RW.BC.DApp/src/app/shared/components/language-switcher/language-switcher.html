@@ -1,0 +1,17 @@
+<div class="flex items-center gap-2.5" role="group" [attr.aria-label]="'common.language' | translate">
+  @for (option of language.options; track option.code) {
+    <button
+      type="button"
+      (click)="onChange(option.code)"
+      [attr.aria-label]="option.label"
+      [attr.aria-pressed]="language.current() === option.code"
+      [title]="option.label"
+      class="h-7 w-7 rounded-full overflow-hidden ring-2 ring-offset-1 ring-offset-surface-0 dark:ring-offset-surface-900 transition hover:scale-110 cursor-pointer"
+      [class.ring-primary]="language.current() === option.code"
+      [class.ring-transparent]="language.current() !== option.code"
+      [class.opacity-50]="language.current() !== option.code"
+    >
+      <img [src]="option.icon" [alt]="option.label" class="h-full w-full object-cover" />
+    </button>
+  }
+</div>

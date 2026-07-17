@@ -1,0 +1,209 @@
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="bc-title text-primary mb-1">{{ 'marketplace.title' | translate }}</h1>
+      <p class="text-surface-600 dark:text-surface-300">{{ 'marketplace.subtitle' | translate }}</p>
+    </div>
+    <div class="flex gap-2">
+      <p-button [label]="'common.refresh' | translate" icon="pi pi-refresh" severity="secondary" (onClick)="refresh()" />
+      @if (web3.isConnected()) {
+        <p-button
+          [label]="'marketplace.listCta' | translate"
+          icon="pi pi-tag"
+          [disabled]="!hasMyNfts()"
+          (onClick)="openListWizard()"
+        />
+      }
+    </div>
+  </div>
+
+  @if (!web3.isConnected()) {
+    <p-message severity="warn" icon="pi pi-wallet" [text]="'marketplace.connectPrompt' | translate" styleClass="w-full" />
+  }
+
+  <div class="flex items-center gap-3 flex-wrap">
+    <label class="text-sm font-bold">{{ 'marketplace.filterSpecies' | translate }}</label>
+    <p-select
+      [options]="[{ label: ('marketplace.allSpecies' | translate), value: null }]"
+      [ngModel]="selectedSpecies()"
+      (ngModelChange)="selectedSpecies.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      styleClass="min-w-40"
+    />
+    <span class="relative">
+      <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-surface-400 text-sm"></i>
+      <input
+        pInputText
+        type="search"
+        [placeholder]="'marketplace.searchPlaceholder' | translate"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        class="pl-9 min-w-48"
+      />
+    </span>
+    <label class="text-sm font-bold ml-auto">{{ 'marketplace.sortLabel' | translate }}</label>
+    <p-select
+      [options]="sortOptions()"
+      [ngModel]="selectedSort()"
+      (ngModelChange)="selectedSort.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      styleClass="min-w-48"
+    />
+    <p-button [label]="'common.refresh' | translate" icon="pi pi-filter" severity="secondary" (onClick)="applyFilters()" />
+  </div>
+
+  @if (loading()) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <p-skeleton height="18rem" />
+      }
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="bc-empty">
+      <i class="pi pi-shopping-cart text-4xl"></i>
+      <p>{{ 'marketplace.empty' | translate }}</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      @for (row of rows(); track row.tokenId) {
+        <app-item-card
+          [nameOnBack]="true"
+          [rarity]="row.rarity"
+          [name]="row.nftName || row.editionName"
+          [imageUrl]="resolveImage(row.artUri)"
+          [price]="formatPrice(row.price)"
+          [fiat]="fiatPrice(row.price)"
+          [seller]="shortSeller(row.seller)"
+          [gender]="row.gender"
+          [health]="row.health"
+          [skill]="row.skill"
+          [morale]="row.morale"
+          [ctaLabel]="isOwner(row) ? ('marketplace.cancel' | translate) : ('marketplace.obtain' | translate)"
+          [ctaCancel]="isOwner(row)"
+          [ctaDisabled]="(isOwner(row) ? cancelTxPhase() !== 'idle' : buyTxPhase() !== 'idle') && activeTokenId() === row.tokenId"
+          (cta)="isOwner(row) ? cancelListing(row) : buy(row)"
+        />
+      }
+    </div>
+    @if (showListingsPaginator()) {
+      <p-paginator
+        [first]="pageFirst()"
+        [rows]="PAGE_SIZE"
+        [totalRecords]="totalCount()"
+        (onPageChange)="onListingsPageChange($event)"
+        styleClass="mt-3"
+      />
+    }
+  }
+</div>
+
+<p-dialog
+  [(visible)]="listWizardVisible"
+  [header]="'marketplace.listDialogTitle' | translate"
+  [modal]="true"
+  [closable]="listTxPhase() === 'idle'"
+  styleClass="w-full max-w-5xl"
+>
+  <p-stepper [(value)]="wizardStep">
+    <p-step-list>
+      <p-step [value]="1">{{ 'marketplace.stepSelect' | translate }}</p-step>
+      <p-step [value]="2">{{ 'marketplace.stepPrice' | translate }}</p-step>
+      <p-step [value]="3">{{ 'marketplace.stepSummary' | translate }}</p-step>
+    </p-step-list>
+    <p-step-panels>
+      <p-step-panel [value]="1">
+        <ng-template #content>
+          @if (myNfts().length === 0) {
+            <p class="text-surface-500 text-center py-6">{{ 'marketplace.empty' | translate }}</p>
+          } @else {
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              @for (nft of pagedMyNfts(); track nft.tokenId) {
+                <div
+                  class="cursor-pointer"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-label]="('marketplace.select' | translate) + ' #' + nft.tokenId.toString()"
+                  (click)="selectNftAndAdvance(nft)"
+                  (keydown.enter)="selectNftAndAdvance(nft)"
+                >
+                  <app-item-card
+                    [rarity]="nft.rarity"
+                    [name]="nft.nftName || '#' + nft.tokenId.toString()"
+                    [imageUrl]="resolveImage(nft.artURI)"
+                    [health]="nft.attributes.health"
+                    [skill]="nft.attributes.skill"
+                    [morale]="nft.attributes.morale"
+                    [gender]="nft.attributes.gender"
+                    [editionName]="nft.editionName"
+                  />
+                </div>
+              }
+            </div>
+            @if (showMyNftsPaginator()) {
+              <p-paginator
+                [first]="myNftsFirst()"
+                [rows]="10"
+                [totalRecords]="myNfts().length"
+                (onPageChange)="onMyNftsPageChange($event)"
+                styleClass="mt-3"
+              />
+            }
+          }
+        </ng-template>
+      </p-step-panel>
+      <p-step-panel [value]="2">
+        <ng-template #content>
+          <div class="flex flex-col gap-4 py-3">
+            <div>
+              <label class="block text-sm font-bold mb-2">{{ 'marketplace.priceLabel' | translate }} (BNB)</label>
+              <p-inputnumber
+                [ngModel]="listPriceEth()"
+                (ngModelChange)="listPriceEth.set($event)"
+                [minFractionDigits]="1"
+                [maxFractionDigits]="8"
+                [min]="0.000001"
+                styleClass="w-full"
+              />
+            </div>
+            <div class="flex gap-2 justify-end">
+              <p-button [label]="'common.back' | translate" severity="secondary" (onClick)="wizardStep.set(1)" />
+              <p-button [label]="'common.next' | translate" [disabled]="!isListPriceValid()" (onClick)="wizardStep.set(3)" />
+            </div>
+          </div>
+        </ng-template>
+      </p-step-panel>
+      <p-step-panel [value]="3">
+        <ng-template #content>
+          <div class="flex flex-col gap-4 py-3">
+            @if (selectedNftToList(); as nft) {
+              <div class="flex flex-col gap-2">
+                <p class="font-bold">
+                  {{ 'marketplace.nft' | translate }} #{{ nft.tokenId.toString() }}
+                  @if (nft.editionName) {
+                    <span class="text-surface-500 font-normal ml-1">— {{ nft.editionName }}</span>
+                  }
+                </p>
+                <p>
+                  <span class="font-bold">{{ 'marketplace.priceLabel' | translate }}:</span>
+                  {{ listPriceEth() }} BNB
+                </p>
+              </div>
+            }
+            <div class="flex gap-2 justify-end">
+              <p-button [label]="'common.back' | translate" severity="secondary" [disabled]="listTxPhase() !== 'idle'" (onClick)="wizardStep.set(2)" />
+              <p-button
+                [label]="'marketplace.confirmList' | translate"
+                icon="pi pi-tag"
+                [disabled]="listTxPhase() !== 'idle'"
+                [loading]="listTxPhase() !== 'idle'"
+                (onClick)="confirmList()"
+              />
+            </div>
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-panels>
+  </p-stepper>
+</p-dialog>

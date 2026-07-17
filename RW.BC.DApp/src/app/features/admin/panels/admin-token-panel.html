@@ -1,0 +1,28 @@
+<div class="flex flex-col gap-6 pt-4">
+
+  @if (tokenState()) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-surface-50 dark:bg-surface-800 rounded">
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.token.emissionCap' | translate }}</span><span class="font-mono text-sm">{{ tokenState()!.emissionCap }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.token.totalMinted' | translate }}</span><span class="font-mono text-sm">{{ tokenState()!.totalMinted }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.token.totalSupply' | translate }}</span><span class="font-mono text-sm">{{ tokenState()!.totalSupply }}</span></div>
+    </div>
+  }
+
+  <p-fieldset [legend]="'admin.token.setEmissionCap' | translate" [toggleable]="true">
+    <div class="flex gap-4 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.token.emissionCap' | translate }}</label>
+        <p-inputnumber [ngModel]="tokenEmissionCap()" (ngModelChange)="tokenEmissionCap.set($event ?? 0)" [min]="0" />
+      </div>
+      <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.token.setEmissionCap" [disabled]="isBusy()" (confirm)="tokenSetEmissionCap()" />
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.token.controls' | translate" [toggleable]="true">
+    <div class="flex flex-wrap gap-3">
+      <p-button [label]="'admin.pause' | translate" icon="pi pi-pause" severity="warn" [disabled]="isBusy()" (onClick)="confirmTokenPause()" />
+      <p-button [label]="'admin.unpause' | translate" icon="pi pi-play" severity="success" [disabled]="isBusy()" (onClick)="tokenUnpause()" />
+    </div>
+  </p-fieldset>
+
+</div>

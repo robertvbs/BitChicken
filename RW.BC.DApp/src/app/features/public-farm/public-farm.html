@@ -1,0 +1,77 @@
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="bc-title text-primary mb-2">{{ 'publicFarm.title' | translate }}</h1>
+    <p class="text-surface-600 dark:text-surface-300 break-all">{{ address() }}</p>
+  </div>
+
+  @if (error(); as errMsg) {
+    <p-message severity="error" [text]="errMsg" />
+  } @else if (loading()) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      @for (_ of [1,2,3,4]; track $index) {
+        <p-skeleton height="8rem" />
+      }
+    </div>
+  } @else {
+    <section>
+      <h2 class="bc-section-title mb-4">{{ 'publicFarm.nfts' | translate }}</h2>
+      @if (inventory().length === 0) {
+        <p class="text-surface-600 dark:text-surface-300">{{ 'publicFarm.noNfts' | translate }}</p>
+      } @else {
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          @for (nft of pagedInventory(); track nft.tokenId) {
+            <app-item-card
+              [name]="nft.nftName || ('#' + nft.tokenId.toString())"
+              [imageUrl]="artUrl(nft.artURI)"
+              [rarity]="nft.rarity"
+              [health]="nft.attributes.health"
+              [skill]="nft.attributes.skill"
+              [morale]="nft.attributes.morale"
+              [gender]="nft.attributes.gender"
+              [staked]="nft.staked"
+            />
+          }
+        </div>
+        @if (showInventoryPaginator()) {
+          <p-paginator
+            [first]="inventoryFirst()"
+            [rows]="PAGE_SIZE"
+            [totalRecords]="inventory().length"
+            (onPageChange)="onInventoryPageChange($event)"
+            styleClass="mt-3"
+          />
+        }
+      }
+    </section>
+
+    <section>
+      <h2 class="bc-section-title mb-4">{{ 'publicFarm.stakedPairs' | translate }}</h2>
+      @if (publicPairs().length === 0) {
+        <p class="text-surface-600 dark:text-surface-300">{{ 'publicFarm.noPairs' | translate }}</p>
+      } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          @for (pair of publicPairs(); track pair.pairId) {
+            <p-card>
+              <p class="font-bold mb-1">{{ 'farm.pair' | translate }} #{{ pair.pairId }}</p>
+              <p class="text-sm text-surface-500">
+                ♂ #{{ pair.maleId.toString() }} + ♀ #{{ pair.femaleId.toString() }}
+              </p>
+              <p class="text-sm mt-1">
+                {{ 'farm.pendingProduction' | translate }}: <span class="font-bold text-primary">{{ formatYield(pair.pendingYield) }} BCKN</span>
+              </p>
+            </p-card>
+          }
+        </div>
+        @if (showPublicPairsPaginator()) {
+          <p-paginator
+            [first]="(pairsPage() - 1) * PAGE_SIZE"
+            [rows]="PAGE_SIZE"
+            [totalRecords]="pairsTotalCount()"
+            (onPageChange)="onPairsPageChange($event)"
+            styleClass="mt-3"
+          />
+        }
+      }
+    </section>
+  }
+</div>

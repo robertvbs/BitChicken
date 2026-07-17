@@ -1,0 +1,74 @@
+<section class="flex flex-col items-center gap-12 py-12">
+  <div class="text-center max-w-2xl">
+    <img src="/icons/app/icon.svg" alt="BitChicken" class="bc-logo mx-auto -mb-3 h-24 w-24 sm:h-28 sm:w-28" />
+    <h1 class="font-display text-xl sm:text-2xl md:text-3xl text-primary text-glow mb-5 leading-relaxed">{{ 'home.title' | translate }}</h1>
+    <p class="text-lg text-surface-600 dark:text-surface-300 mb-8">{{ 'home.subtitle' | translate }}</p>
+    <div class="flex gap-3 justify-center flex-wrap">
+      <p-button [label]="'home.ctaStore' | translate" icon="pi pi-shopping-bag" routerLink="/loja" />
+      <p-button [label]="'home.ctaFarm' | translate" icon="pi pi-sync" severity="secondary" routerLink="/granja" />
+      <p-button [label]="'home.ctaCollection' | translate" icon="pi pi-book" severity="secondary" routerLink="/colecao" />
+      <p-button [label]="'home.ctaMarketplace' | translate" icon="pi pi-shopping-cart" severity="secondary" routerLink="/mercado" />
+    </div>
+  </div>
+
+  <div class="w-full max-w-4xl">
+    <h2 class="bc-section-title text-center mb-6">{{ 'home.howTitle' | translate }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bc-step">
+        <p-card styleClass="text-center h-full">
+          <span class="bc-step__icon"><i class="pi pi-wallet"></i></span>
+          <h3 class="font-bold mb-2">{{ 'home.how.step1.title' | translate }}</h3>
+          <p class="text-surface-500 text-sm">{{ 'home.how.step1.desc' | translate }}</p>
+        </p-card>
+      </div>
+      <div class="bc-step">
+        <p-card styleClass="text-center h-full">
+          <span class="bc-step__icon"><i class="pi pi-shopping-bag"></i></span>
+          <h3 class="font-bold mb-2">{{ 'home.how.step2.title' | translate }}</h3>
+          <p class="text-surface-500 text-sm">{{ 'home.how.step2.desc' | translate }}</p>
+        </p-card>
+      </div>
+      <div class="bc-step">
+        <p-card styleClass="text-center h-full">
+          <span class="bc-step__icon"><i class="pi pi-sync"></i></span>
+          <h3 class="font-bold mb-2">{{ 'home.how.step3.title' | translate }}</h3>
+          <p class="text-surface-500 text-sm">{{ 'home.how.step3.desc' | translate }}</p>
+        </p-card>
+      </div>
+      <div class="bc-step">
+        <p-card styleClass="text-center h-full">
+          <span class="bc-step__icon"><i class="pi pi-star"></i></span>
+          <h3 class="font-bold mb-2">{{ 'home.how.step4.title' | translate }}</h3>
+          <p class="text-surface-500 text-sm">{{ 'home.how.step4.desc' | translate }}</p>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full max-w-4xl">
+    <h2 class="bc-section-title text-center mb-4">{{ 'home.featuredTiers' | translate }}</h2>
+    <div class="text-center mb-6">
+      <p-button [label]="'home.viewStore' | translate" icon="pi pi-arrow-right" severity="secondary" routerLink="/loja" />
+    </div>
+
+    @if (tiersLoading()) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+        @for (_ of skeletons; track $index) {
+          <p-skeleton height="13rem" borderRadius="0.95rem" />
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+        @for (tier of tiers(); track tier.index) {
+          <a class="bc-htier" routerLink="/loja">
+            <app-egg-card
+              [level]="tier.index + 1"
+              [levelLabel]="'home.tier' | translate"
+              [price]="formatPrice(tier.price)"
+            />
+          </a>
+        }
+      </div>
+    }
+  </div>
+</section>

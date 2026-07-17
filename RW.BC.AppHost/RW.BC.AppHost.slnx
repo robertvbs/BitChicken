@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="RW.BC.AppHost.csproj" />
+  <Project Path="../RW.BC.Api/src/RW.BC.Api/RW.BC.Api.csproj" />
+</Solution>

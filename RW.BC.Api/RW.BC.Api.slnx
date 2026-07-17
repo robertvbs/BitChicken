@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/01 - Core/" />
+  <Folder Name="/01 - Core/01 - Application/">
+    <Project Path="src/RW.BC.Application/RW.BC.Application.csproj" />
+  </Folder>
+  <Folder Name="/01 - Core/02 - Domain/">
+    <Project Path="src/RW.BC.Domain/RW.BC.Domain.csproj" />
+  </Folder>
+  <Folder Name="/01 - Core/03 - Infrastructure/">
+    <Project Path="src/RW.BC.Infrastructure.Persistence/RW.BC.Infrastructure.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/02 - Tests/">
+    <Project Path="tests/RW.BC.Application.UnitTests/RW.BC.Application.UnitTests.csproj" />
+    <Project Path="tests/RW.BC.Api.IntegrationTests/RW.BC.Api.IntegrationTests.csproj" />
+    <Project Path="tests/RW.BC.Domain.UnitTests/RW.BC.Domain.UnitTests.csproj" />
+    <Project Path="tests/RW.BC.Infrastructure.Persistence.IntegrationTests/RW.BC.Infrastructure.Persistence.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/03 - Developer/">
+    <Project Path="src/RW.BC.ServiceDefaults/RW.BC.ServiceDefaults.csproj" />
+  </Folder>
+  <Project Path="src/RW.BC.Api/RW.BC.Api.csproj" />
+</Solution>

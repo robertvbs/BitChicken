@@ -1,0 +1,12 @@
+{
+  "name": "bitchicken-primeng-mcp-runner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned runner for the PrimeNG MCP server. Forces @modelcontextprotocol/sdk to 1.25.2 because 1.26.0+ break @primeuix/mcp tool registration (get_migration_guide: 'expected a Zod schema or ToolAnnotations'), which crashes the server on startup.",
+  "dependencies": {
+    "@primeng/mcp": "21.1.9"
+  },
+  "overrides": {
+    "@modelcontextprotocol/sdk": "1.25.2"
+  }
+}

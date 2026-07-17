@@ -1,0 +1,37 @@
+# Regras de Negócio — RW.BC.Api
+
+| # | Regra | Localização | Impacto se violada |
+|---|---|---|---|
+| 1 | Conta criada automaticamente na primeira requisição autenticada (JIT — sem `POST /accounts`) | `Identity/AccountProvisioningMiddleware.cs` | Sem middleware ativo, `GET /accounts/me` retorna 404 na primeira visita |
+| 2 | Idempotência no provisionamento: se UID já existe, retorna sem erro | `Application/Accounts/Commands/EnsureAccountProvisioned/EnsureAccountProvisionedHandler.cs:18` | Sem a guarda, race condition cria duplicata e estoura constraint de PK |
+| 3 | Race condition de PK no provisionamento absorvida silenciosamente (log `Debug`) | `EnsureAccountProvisionedHandler.cs:35` | Sem esse catch, múltiplas requisições simultâneas do mesmo usuário retornam 409 inesperado |
+| 4 | Colisão de e-mail com UID diferente → `ConflictException` → 409 | `EnsureAccountProvisionedHandler.cs:21-24` | Sem a verificação, dois Firebase UIDs poderiam compartilhar o mesmo e-mail |
+| 5 | Nickname: 3–20 chars, somente `[A-Za-z0-9 _]` | `Domain/Accounts/Account.cs:74` (`NicknameRegex`) | Nickname inválido lança `DomainException` → 422 ao provisionar |
+| 6 | Nickname derivado do `displayName` do Firebase; se inválido, usa local-part do e-mail sanitizado | `Application/Accounts/Commands/EnsureAccountProvisioned/EnsureAccountProvisionedHandler.cs:43-67` | Usuários sem `displayName` recebem apelido gerado; não falha o provisionamento |
+| 7 | E-mail normalizado para lowercase e validado por regex antes de persistir | `Domain/BuildingBlocks/Email.cs:33-36` | E-mail inválido lança `DomainException` → 422 |
+| 8 | Nonce de vínculo de carteira expira em 5 minutos | `Application/Accounts/Commands/RequestWalletLinkNonce/RequestWalletLinkNonceHandler.cs:15` | Após expiração, `LinkWallet` retorna 410; usuário deve solicitar novo nonce |
+| 9 | Nonce não recriado se ainda válido — mesmo challenge retornado ao cliente | `RequestWalletLinkNonceHandler.cs:32` | Impede rotação desnecessária; garante que assinatura feita pouco antes ainda seja aceita |
+| 10 | Solicitação de nonce com carteira já vinculada → 409 | `RequestWalletLinkNonceHandler.cs:24-27` | Sem essa guarda, usuário com carteira poderia iniciar novo fluxo de vínculo |
+| 11 | Assinatura SIWE verificada por ECDSA EcRecover — endereço recuperado deve ser igual ao informado | `Application/Accounts/Commands/LinkWallet/LinkWalletHandler.cs:25-28` | Assinatura de outro endereço seria aceita (impersonação) |
+| 12 | `address` validado por regex EVM (`^0x[0-9a-fA-F]{40}$`) antes mesmo do EcRecover | `Application/Accounts/Commands/LinkWallet/LinkWalletValidator.cs:9-13` | Sem pré-validação, strings inválidas chegam ao Nethereum e lançam exceção não mapeada |
+| 13 | `signature` validado: `^0x[0-9a-fA-F]{130}$` (65 bytes hex) | `Application/Accounts/Commands/LinkWallet/LinkWalletValidator.cs:15-19` | Signature mal formada → 422 com campo indicado |
+| 14 | Nonce consumido (removido) no commit bem-sucedido do vínculo — anti-replay | `LinkWalletHandler.cs:32` | Sem remoção, a mesma assinatura poderia ser reutilizada |
+| 15 | Carteira já vinculada a outra conta → `ConflictException` mapeada para `WalletAlreadyLinkedException` → 409 | `LinkWalletHandler.cs:38-41` | Sem tratamento de `ConflictException` do DB, o erro vaza como 500 |
+| 16 | Endereço EVM na conta salvo na forma retornada pelo EcRecover (não o endereço fornecido pelo cliente) | `LinkWalletHandler.cs:30` (`account.LinkWallet(recovered)`) | Usar o endereço do cliente permitiria vincular endereço diferente do que foi realmente assinado |
+| 17 | `account.LinkWallet` valida regex EVM no domínio antes de persistir | `Domain/Accounts/Account.cs:46-50` | Inconsistência entre validation da Application e do Domain — Domain é a última barreira |
+| 18 | Listings entregues ao cliente somente com `status == "Active"` (filtro server-side, não via Gridify) | `Infrastructure.Persistence/Repositories/Views/ListingQueryService.cs:18-21` | Sem o filtro, listings cancelados/comprados aparecem na API |
+| 19 | Pares de staking entregues somente com `status == "Staked"` e `staker == address` | `Infrastructure.Persistence/Repositories/Views/StakingQueryService.cs:21` | Sem o filtro, pares unstaked aparecem na listagem do usuário |
+| 20 | NFTs burned excluídos da listagem por carteira | `Infrastructure.Persistence/Repositories/Views/NftQueryService.cs` (filtro `!n.Burned`) | NFTs queimados apareceriam na coleção do usuário |
+| 21 | `DefaultOrderBy` injetado pelo handler quando `orderBy` ausente — garantia de paginação determinística | `GetListingsHandler.cs:9` (`"listedAtBlock desc"`); `GetAccountStakingHandler.cs:9` (`"stakedAt desc"`) | Sem ordem padrão, Postgres pode retornar páginas em ordens diferentes — itens duplicados ou pulados |
+| 22 | Campos BigInteger (tokenId, price, supply, etc.) serializados como `string` para preservar precisão full (78 dígitos) | `Application/*/Dtos/*.cs` (todos os DTOs com `string` para valores on-chain) | `long`/`decimal` truncaria valores acima de 2^63 / 10^28 — corrupção silenciosa de dados on-chain |
+| 23 | Paginação: page 1–200, pageSize 1–100, filter ≤ 500 chars, orderBy ≤ 200 chars | `Application/_Querying/GridifyHardLimits.cs` + `PagedRequestValidator.cs` | Sem limites, query injection via Gridify ou queries sem índice podem degradar o DB |
+| 24 | `GridifyGlobalConfiguration.IgnoreNotMappedFields = false` — campo não mapeado → exceção | `Application/_Extensions/DIExtension.cs:41` | Com `true`, clientes receberiam resultados sem filtro ao digitar campo errado |
+| 25 | Resumo de transparência em cache de 30 s (`IMemoryCache`) | `Application/Transparency/Queries/GetSummary/GetSummaryHandler.cs:9` | Sem cache, cada `GET /transparency/summary` faz 5 queries ao DB (incluindo SUM full-scan) |
+| 26 | `SaveChangesMappingExceptionsAsync` converte `PostgresException 23505` em `ConflictException` | `Infrastructure.Persistence/DbContextSaveChangesExtensions.cs:22-25` | Sem mapeamento, `DbUpdateException` chega como 500 em vez de 409 |
+| 27 | `AuditingInterceptor` injeta `CreatedAt` / `UpdatedAt` automaticamente via `IAuditable` | `Infrastructure.Persistence/AuditingInterceptor.cs` | Sem o interceptor, campos de auditoria ficam nulos |
+| 28 | JSON: camelCase, enum como string snake_case upper (`ACTIVE`/`DISABLED`), nulls omitidos | `Api/Web/JsonDefaults.cs` | Serialização inconsistente quebraria clientes que dependem do formato |
+| 29 | Firebase JWT validado com issuer `securetoken.google.com/<projectId>` e audience `<projectId>` | `Api/Identity/FirebaseJwtExtensions.cs:28-33` | Tokens de outro projeto seriam aceitos (vazamento cross-tenant) |
+| 30 | Claim `user_id` preferida sobre `sub` para ID do usuário | `Api/Identity/IdentityClaims.cs:5-6` | Firebase emite ambos; `sub` é o fallback para compatibilidade |
+| 31 | `Subscribe` no SignalR valida endereço EVM; inválido → `HubException` (não propaga stack trace) | `Api/Hubs/EventsHub.cs:13` | Sem validação, grupo por string arbitrária — possível vetor de enumeração de grupos |
+| 32 | `forgeFulfilled` enviado apenas para o grupo do comprador (`hub.Clients.Group(ev.Buyer)`) | `Api/Realtime/MarketplaceEventsListener.cs:130` | Enviar para `All` vazaria dados de forge de outros usuários |
+| 33 | `EnableRetryOnFailure(3, 5s)` configurado no Npgsql — resiliência no EF Core | `Infrastructure.Persistence/_Extensions/DIExtension.cs:34-35` | Sem retry, falhas transitórias de rede derrubam requisições diretamente |

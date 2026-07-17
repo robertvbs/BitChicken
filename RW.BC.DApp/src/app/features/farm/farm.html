@@ -1,0 +1,155 @@
+<div class="flex flex-col gap-8">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="bc-title text-primary">{{ 'farm.title' | translate }}</h1>
+    @if (web3.isConnected()) {
+      <p-button [label]="'common.refresh' | translate" icon="pi pi-refresh" severity="secondary" (onClick)="refresh()" />
+    }
+  </div>
+
+  @if (!web3.isConnected()) {
+    <p-message severity="warn" icon="pi pi-wallet" [text]="'farm.connectPrompt' | translate" styleClass="w-full" />
+  } @else if (loading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (_ of [1,2,3]; track $index) {
+        <p-skeleton height="10rem" />
+      }
+    </div>
+  } @else {
+    <app-pairing-coop
+      [inventory]="availableInventory()"
+      [male]="selectedMale()"
+      [female]="selectedFemale()"
+      [estimate]="pairEstimate()"
+      [multiplierText]="multiplierText()"
+      [ideal]="isMatchedPair()"
+      [phase]="stakeTxPhase()"
+      [canStake]="canStake()"
+      [hasMales]="hasMales()"
+      [hasFemales]="hasFemales()"
+      (placeMale)="placeMale($event)"
+      (placeFemale)="placeFemale($event)"
+      (clearMaleSlot)="clearMale()"
+      (clearFemaleSlot)="clearFemale()"
+      (lodge)="lodge()"
+      (addToWallet)="onAddToWallet($event)"
+    />
+
+    <section>
+      <h2 class="bc-section-title mb-4">{{ 'farm.lodgedPairs' | translate }}</h2>
+      @if (stakedPairs().length === 0) {
+        <p class="text-surface-600 dark:text-surface-300">{{ 'farm.noPairs' | translate }}</p>
+      } @else {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          @for (pair of stakedPairs(); track pair.pairId) {
+            <app-staked-pair-card
+              [pair]="pair"
+              [estimatePerCycle]="pairEstimateFor(pair)"
+              [cycleProgress]="cycleProgress(pair)"
+              [timeUntilUnlock]="timeUntilUnlock(pair)"
+              [canClaim]="canClaim(pair)"
+              [claimPhase]="claimPhaseFor(pair)"
+              [unstakePhase]="unstakePhaseFor(pair)"
+              [harvestAmount]="harvestAmountFor(pair)"
+              (claim)="claim(pair)"
+              (unstake)="unstake(pair)"
+              (harvestDone)="clearHarvest()"
+            />
+          }
+        </div>
+        @if (showStakedPairsPaginator()) {
+          <p-paginator
+            [first]="(pairsPage() - 1) * pairsPageSize"
+            [rows]="pairsPageSize"
+            [totalRecords]="pairsTotalCount()"
+            (onPageChange)="onPairsPageChange($event)"
+            styleClass="mt-3"
+          />
+        }
+      }
+    </section>
+
+    <section>
+      <h2 class="bc-section-title mb-4">{{ 'referral.title' | translate }}</h2>
+      <p-card>
+        @if (hasReferralCode()) {
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="font-bold text-lg">#{{ referralInfo()?.code }}</span>
+              <p-button [label]="'referral.copyLink' | translate" icon="pi pi-copy" severity="secondary" size="small" (onClick)="copyReferralLink()" />
+              <p-button
+                [label]="showQr() ? ('referral.hideQr' | translate) : ('referral.showQr' | translate)"
+                icon="pi pi-qrcode"
+                severity="secondary"
+                size="small"
+                (onClick)="toggleQr()"
+              />
+            </div>
+            @if (showQr()) {
+              <app-qr-code [value]="referralLink()" />
+            }
+            <app-share-buttons [url]="referralLink()" />
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div>
+                <p class="text-surface-500">{{ 'referral.referralCount' | translate }}</p>
+                <p class="font-bold">{{ referralInfo()?.referralCount ?? 0 }}</p>
+              </div>
+              <div>
+                <p class="text-surface-500">{{ 'referral.level' | translate }}</p>
+                <p class="font-bold">{{ referralLevel() }}</p>
+              </div>
+              <div>
+                <p class="text-surface-500">{{ 'referral.rate' | translate }}</p>
+                <p class="font-bold text-primary">{{ referralRatePercent() }}%</p>
+              </div>
+              @if (referralInfo()?.upline) {
+                <div>
+                  <p class="text-surface-500">{{ 'referral.upline' | translate }}</p>
+                  <p class="font-bold font-mono text-xs">{{ referralInfo()!.upline }}</p>
+                </div>
+              }
+              <div>
+                <p class="text-surface-500">{{ 'referral.totalAccrued' | translate }}</p>
+                <p class="font-bold text-primary">{{ formatYield(referralTotalAccrued()) }} BNB</p>
+              </div>
+              <div>
+                <p class="text-surface-500">{{ 'referral.totalClaimed' | translate }}</p>
+                <p class="font-bold">{{ formatYield(referralTotalClaimed()) }} BNB</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <p class="text-surface-500 text-sm">{{ 'referral.pendingRewards' | translate }}</p>
+                <p class="font-bold text-primary">{{ formatYield(referralPending()) }} BNB</p>
+              </div>
+              <app-transaction-widget
+                [phase]="referralTxPhase()"
+                ctaKey="referral.claim"
+                ctaIcon="pi pi-download"
+                [disabled]="!hasPendingReferral()"
+                (confirm)="claimReferral()"
+              />
+            </div>
+            @if (referralToNextLevel() !== null) {
+              <p class="text-xs text-surface-500">
+                {{ 'referral.nextLevel' | translate: { count: referralToNextLevel() } }}
+              </p>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col gap-3">
+            <p class="text-surface-600 dark:text-surface-300">{{ 'referral.noCode' | translate }}</p>
+            @if (referralInfo()?.upline) {
+              <p class="text-sm text-surface-500">{{ 'referral.upline' | translate }}: <span class="font-mono">{{ referralInfo()!.upline }}</span></p>
+            }
+            <app-transaction-widget
+              [phase]="registerTxPhase()"
+              ctaKey="referral.register"
+              ctaIcon="pi pi-user-plus"
+              (confirm)="registerReferrer()"
+            />
+          </div>
+        }
+      </p-card>
+    </section>
+  }
+</div>

@@ -1,0 +1,22 @@
+node_modules
+/cache
+/artifacts
+/typechain
+/typechain-types
+/types
+/coverage
+/coverage.json
+
+# Artefato de deploy local — regenerado por `npm run deploy:localhost`
+/scripts/deployed-*.json
+
+# Segredos — NUNCA versionar (contêm chaves privadas)
+.env
+.production
+
+# Foundry (deps e artefatos de build/teste)
+lib/
+out-forge/
+cache-forge/
+out-slither/
+cache-slither/

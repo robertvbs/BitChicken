@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <ExcludeByFile>**/obj/**/*.cs,**/*.g.cs,**/*.generated.cs,**/Migrations/**/*.cs,**/Migrations/*.cs,**/Endpoints/**/*.cs,**/Endpoints/*.cs,**/Program.cs,**/AppHost.cs,**/DIExtension.cs,**/Documentation.cs,**/*DesignTimeDbContextFactory.cs,**/FirebaseJwtExtensions.cs</ExcludeByFile>
+          <ExcludeByAttribute>Obsolete,GeneratedCode,CompilerGenerated,ExcludeFromCodeCoverage,DecimalConstantAttribute</ExcludeByAttribute>
+          <Format>cobertura</Format>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

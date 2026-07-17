@@ -1,0 +1,150 @@
+<div class="flex flex-col gap-6 pt-4">
+
+  <p-fieldset [legend]="'admin.nft.registerEdition' | translate" [toggleable]="true">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.pinataJwt' | translate }}</label>
+        <div class="flex gap-2">
+          <input pInputText type="password" [ngModel]="pinataJwt()" (ngModelChange)="pinataJwt.set($event)" [placeholder]="'admin.nft.pinataJwtPlaceholder' | translate" class="flex-1" />
+          <p-button label="Save" icon="pi pi-save" severity="secondary" size="small" (onClick)="savePinataJwt()" />
+        </div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.uploadImage' | translate }}</label>
+        <div class="flex gap-2 items-center">
+          <input type="file" accept="image/*" (change)="handleImageUpload($event)" class="text-sm" />
+          @if (uploading()) {
+            <i class="pi pi-spin pi-spinner text-primary"></i>
+          }
+        </div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.name' | translate }}</label>
+        <input pInputText [ngModel]="regName()" (ngModelChange)="regName.set($event)" [placeholder]="'admin.nft.namePlaceholder' | translate" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.artURI' | translate }}</label>
+        <input pInputText [ngModel]="regArtURI()" (ngModelChange)="regArtURI.set($event)" [placeholder]="'admin.nft.artURIPlaceholder' | translate" />
+      </div>
+      @if (previewUrl()) {
+        <div class="md:col-span-2">
+          <img [src]="previewUrl()" alt="art preview" class="h-24 w-24 object-cover rounded" appImageFallback />
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.health' | translate }}</label>
+        <p-inputnumber [ngModel]="regHealth()" (ngModelChange)="regHealth.set($event ?? 0)" [min]="0" [max]="65535" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.skill' | translate }}</label>
+        <p-inputnumber [ngModel]="regSkill()" (ngModelChange)="regSkill.set($event ?? 0)" [min]="0" [max]="65535" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.morale' | translate }}</label>
+        <p-inputnumber [ngModel]="regMorale()" (ngModelChange)="regMorale.set($event ?? 0)" [min]="0" [max]="65535" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.rarity' | translate }}</label>
+        <p-select [ngModel]="regRarity()" (ngModelChange)="regRarity.set($event)" [options]="rarityOptions()" optionLabel="label" optionValue="value" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.maxSupply' | translate }}</label>
+        <p-inputnumber [ngModel]="regMaxSupply()" (ngModelChange)="regMaxSupply.set($event ?? 0)" [min]="0" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.price' | translate }}</label>
+        <p-inputnumber [ngModel]="regPrice()" (ngModelChange)="regPrice.set($event ?? 0)" [minFractionDigits]="0" [maxFractionDigits]="8" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.distribution' | translate }}</label>
+        <p-select [ngModel]="regDistribution()" (ngModelChange)="regDistribution.set($event)" [options]="distributionOptions()" optionLabel="label" optionValue="value" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.mintStart' | translate }}</label>
+        <p-datepicker [ngModel]="regMintStart()" (ngModelChange)="regMintStart.set($event)" [showTime]="true" dateFormat="yy-mm-dd" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.mintEnd' | translate }}</label>
+        <p-datepicker [ngModel]="regMintEnd()" (ngModelChange)="regMintEnd.set($event)" [showTime]="true" dateFormat="yy-mm-dd" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="text-sm font-medium block mb-2">{{ 'admin.nft.tierWeights' | translate }}</label>
+        <div class="grid grid-cols-5 gap-2">
+          @for (i of [0,1,2,3,4,5,6,7,8,9]; track i) {
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-surface-500">T{{ i }}</label>
+              <p-inputnumber [ngModel]="getTierWeight(i)" (ngModelChange)="updateTierWeight(i, $event ?? 0)" [min]="0" />
+            </div>
+          }
+        </div>
+      </div>
+      <div class="md:col-span-2">
+        <app-transaction-widget
+          [phase]="tx.txPhase()"
+          ctaKey="admin.nft.registerEdition"
+          ctaIcon="pi pi-plus"
+          [disabled]="isBusy()"
+          (confirm)="registerEdition()"
+        />
+      </div>
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.nft.catalog' | translate" [toggleable]="true">
+    <p-table [value]="catalog()" [paginator]="catalog().length > 10" [rows]="10" responsiveLayout="scroll">
+      <ng-template #header>
+        <tr>
+          <th>ID</th>
+          <th>{{ 'admin.nft.name' | translate }}</th>
+          <th>{{ 'admin.nft.minted' | translate }}</th>
+          <th>{{ 'admin.nft.rarity' | translate }}</th>
+          <th>{{ 'admin.nft.active' | translate }}</th>
+          <th>{{ 'admin.nft.editWindow' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-edition>
+        <tr>
+          <td>{{ edition.id }}</td>
+          <td>{{ edition.name }}</td>
+          <td>{{ edition.minted }} / {{ edition.maxSupply === 0 ? '∞' : edition.maxSupply }}</td>
+          <td>
+            <p-tag [value]="rarityOptions()[edition.rarity]?.label" />
+          </td>
+          <td>
+            <p-toggleswitch [ngModel]="edition.active" (ngModelChange)="toggleEditionActive(edition)" [disabled]="isBusy()" />
+          </td>
+          <td>
+            <p-button icon="pi pi-calendar" size="small" severity="secondary" [disabled]="isBusy()" (onClick)="openWindowEditor(edition)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td colspan="6" class="text-center p-4">{{ 'admin.nft.noEditions' | translate }}</td></tr>
+      </ng-template>
+    </p-table>
+  </p-fieldset>
+
+  <p-dialog
+    [visible]="windowDialogVisible()"
+    (onHide)="windowDialogVisible.set(false)"
+    [header]="'admin.nft.editWindow' | translate"
+    [modal]="true"
+    [closable]="!windowTx.isBusy()"
+    styleClass="w-full max-w-sm"
+  >
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.windowStart' | translate }}</label>
+        <p-datepicker [ngModel]="windowMintStart()" (ngModelChange)="windowMintStart.set($event)" [showTime]="true" dateFormat="yy-mm-dd" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.nft.windowEnd' | translate }}</label>
+        <p-datepicker [ngModel]="windowMintEnd()" (ngModelChange)="windowMintEnd.set($event)" [showTime]="true" dateFormat="yy-mm-dd" />
+      </div>
+    </div>
+    <div class="pt-3">
+      <app-transaction-widget [phase]="windowTx.txPhase()" ctaKey="admin.nft.setWindow" [disabled]="windowTx.isBusy()" (confirm)="saveEditionWindow()" />
+    </div>
+  </p-dialog>
+
+</div>

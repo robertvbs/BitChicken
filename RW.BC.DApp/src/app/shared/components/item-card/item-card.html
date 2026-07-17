@@ -1,0 +1,181 @@
+<ng-template #frontFace>
+  <p-card
+    styleClass="h-full"
+    [style.--p-card-body-padding]="'0.65rem 0.8rem 0.85rem'"
+    [style.--p-card-body-gap]="'0.5rem'"
+    [style.--p-card-border-radius]="'0.95rem'"
+    [style.overflow]="'hidden'"
+  >
+    <ng-template #header>
+      <div class="bc-itemcard__head">
+        @if (showFlag()) {
+          <span class="bc-itemcard__flag">{{ rarityLabelKey() | translate }}</span>
+        }
+        <div class="bc-itemcard__art">
+          @if (showImage()) {
+            <img
+              class="bc-itemcard__img"
+              [src]="imageUrl()"
+              [alt]="name()"
+              loading="lazy"
+              decoding="async"
+              appImageFallback
+              (error)="onImageError()"
+            />
+          } @else {
+            <app-nft-placeholder [rarity]="rarity()" />
+          }
+        </div>
+      </div>
+    </ng-template>
+
+    @if (name() && !nameOnBack()) {
+      <p class="bc-itemcard__name">{{ name() }}</p>
+    }
+
+    @if (hasTokenId()) {
+      <div class="bc-itemcard__tokenid-row">
+        <span class="bc-itemcard__tokenid-label">{{ tokenIdLabel() }}</span>
+        <button
+          type="button"
+          class="bc-itemcard__watch-btn"
+          [attr.aria-label]="'common.addToWallet' | translate"
+          [pTooltip]="'common.addToWallet' | translate"
+          tooltipPosition="top"
+          (click)="$event.stopPropagation(); addToWallet.emit(tokenId()!)"
+        >
+          <i class="pi pi-wallet"></i>
+        </button>
+      </div>
+    }
+
+    @if (staked()) {
+      <span class="bc-itemcard__badge bc-itemcard__badge--staked">
+        {{ 'farm.lodged' | translate }}
+      </span>
+    }
+
+    @if (owned() === true) {
+      <span class="bc-itemcard__badge bc-itemcard__badge--owned">
+        {{ 'collection.owned' | translate }}
+      </span>
+    }
+
+    @if (price()) {
+      <div class="bc-itemcard__price">
+        {{ price() }}
+        <small
+          class="bc-itemcard__bnb"
+          [pTooltip]="fiat()"
+          [tooltipDisabled]="!fiat()"
+          tooltipPosition="top"
+        >BNB</small>
+      </div>
+    }
+
+    @if (ctaLabel()) {
+      <button
+        type="button"
+        class="bc-itemcard__cta w-full"
+        [class.bc-itemcard__cta--cancel]="ctaCancel()"
+        [disabled]="ctaDisabled()"
+        (click)="cta.emit()"
+      >
+        {{ ctaLabel() }}
+      </button>
+    }
+  </p-card>
+</ng-template>
+
+<ng-template #flipBtn>
+  <button
+    type="button"
+    class="bc-itemcard__flip-btn"
+    [attr.aria-pressed]="flipped()"
+    [attr.aria-label]="flipAriaLabel() | translate"
+    (click)="$event.stopPropagation(); toggleFlip()"
+  >
+    <i class="pi pi-sync"></i>
+  </button>
+</ng-template>
+
+@if (hasAttributes()) {
+  <div class="bc-itemcard__scene" (keydown.escape)="onEscapeKey()">
+    <div class="bc-itemcard__flipper">
+      <div class="bc-itemcard__face bc-itemcard__face--front" [attr.aria-hidden]="flipped() ? 'true' : null">
+        <ng-container [ngTemplateOutlet]="frontFace" />
+        <ng-container [ngTemplateOutlet]="flipBtn" />
+      </div>
+      <div class="bc-itemcard__face bc-itemcard__face--back" [attr.aria-hidden]="flipped() ? null : 'true'">
+        <p-card
+          styleClass="h-full"
+          [style.--p-card-body-padding]="'0.65rem 0.8rem 0.85rem'"
+          [style.--p-card-body-gap]="'0.5rem'"
+          [style.--p-card-border-radius]="'0.95rem'"
+          [style.overflow]="'hidden'"
+        >
+          <div class="bc-itemcard__back-content">
+            @if (editionName()) {
+              <p class="bc-itemcard__back-title">{{ editionName() }}</p>
+            }
+            <dl class="bc-itemcard__attrs">
+              @if (nameOnBack() && name()) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'attributes.name' | translate }}</dt>
+                  <dd>{{ name() }}</dd>
+                </div>
+              }
+              @if (health() !== null) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'attributes.health' | translate }}</dt>
+                  <dd>{{ health() }}</dd>
+                </div>
+              }
+              @if (skill() !== null) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'attributes.skill' | translate }}</dt>
+                  <dd>{{ skill() }}</dd>
+                </div>
+              }
+              @if (morale() !== null) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'attributes.morale' | translate }}</dt>
+                  <dd>{{ morale() }}</dd>
+                </div>
+              }
+              @if (genderSymbol()) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'attributes.gender' | translate }}</dt>
+                  <dd>{{ genderSymbol() }}</dd>
+                </div>
+              }
+              @if (supplyLabel()) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'store.supply' | translate }}</dt>
+                  <dd>{{ supplyLabel() }}</dd>
+                </div>
+              }
+              @if (seller()) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'marketplace.seller' | translate }}</dt>
+                  <dd class="bc-itemcard__attr-seller">{{ seller() }}</dd>
+                </div>
+              }
+              @if (count() > 1) {
+                <div class="bc-itemcard__attr">
+                  <dt>{{ 'attributes.quantity' | translate }}</dt>
+                  <dd class="bc-itemcard__count">×{{ count() }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </p-card>
+        <ng-container [ngTemplateOutlet]="flipBtn" />
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="bc-itemcard__face bc-itemcard__face--front bc-itemcard__face--solo">
+    <ng-container [ngTemplateOutlet]="frontFace" />
+  </div>
+}

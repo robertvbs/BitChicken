@@ -1,0 +1,303 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bc-ambient {
+  position: absolute;
+  inset: 0;
+}
+
+.bc-day,
+.bc-night {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.7s ease;
+}
+
+.bc-day { opacity: 1; }
+.bc-night { opacity: 0; }
+.bc-ambient--night .bc-day { opacity: 0; }
+.bc-ambient--night .bc-night { opacity: 1; }
+
+/* ---------- DAY ---------- */
+.bc-day__sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #7cc0ff 0%, #a9d8ff 45%, #e9f5ff 100%);
+}
+
+.bc-sun {
+  position: absolute;
+  top: 8%;
+  right: 9%;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #fff4c6 0%, #ffd95e 52%, #ffb52e 100%);
+  box-shadow: 0 0 0 10px rgba(255, 214, 94, 0.22), 0 0 46px 16px rgba(255, 197, 74, 0.32);
+  animation: bc-sun-pulse 9s ease-in-out infinite;
+}
+
+.bc-cloud {
+  position: absolute;
+  width: 120px;
+  height: 36px;
+  background: #ffffff;
+  border-radius: 9999px;
+  box-shadow: 0 8px 16px rgba(70, 110, 160, 0.16);
+}
+
+.bc-cloud::before,
+.bc-cloud::after {
+  content: '';
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.bc-cloud::before { width: 54px; height: 54px; top: -26px; left: 16px; }
+.bc-cloud::after { width: 38px; height: 38px; top: -16px; left: 64px; }
+
+.bc-cloud--1 { top: max(22%, 130px); --cloud-scale: 1.1; animation: bc-cloud-drift 80s linear infinite; }
+.bc-cloud--2 { top: max(36%, 200px); --cloud-scale: 0.78; opacity: 0.92; animation: bc-cloud-drift 112s linear infinite -40s; }
+.bc-cloud--3 { top: max(15%, 120px); --cloud-scale: 1.4; opacity: 0.85; animation: bc-cloud-drift 145s linear infinite -90s; }
+
+/* ---------- NIGHT ---------- */
+.bc-night__sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #07061a 0%, #110c30 55%, #20133f 100%);
+}
+
+.bc-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 4% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 9% 38%, #cfe9ff, transparent),
+    radial-gradient(1.5px 1.5px at 13% 66%, #fff, transparent),
+    radial-gradient(1px 1px at 17% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 21% 84%, #e7d3ff, transparent),
+    radial-gradient(1.5px 1.5px at 25% 48%, #fff, transparent),
+    radial-gradient(1px 1px at 29% 9%, #bfe3ff, transparent),
+    radial-gradient(1px 1px at 33% 72%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 37% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 41% 58%, #cfe9ff, transparent),
+    radial-gradient(1px 1px at 45% 16%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 49% 88%, #fff, transparent),
+    radial-gradient(1px 1px at 53% 42%, #d8c8ff, transparent),
+    radial-gradient(1px 1px at 57% 68%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 61% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 65% 52%, #bfe3ff, transparent),
+    radial-gradient(1px 1px at 69% 80%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 73% 34%, #fff, transparent),
+    radial-gradient(1px 1px at 77% 14%, #cfe9ff, transparent),
+    radial-gradient(1px 1px at 81% 62%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 85% 40%, #fff, transparent),
+    radial-gradient(1px 1px at 89% 24%, #e7d3ff, transparent),
+    radial-gradient(1px 1px at 92% 76%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 95% 50%, #fff, transparent),
+    radial-gradient(1px 1px at 6% 56%, #fff, transparent),
+    radial-gradient(1px 1px at 47% 6%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 90%, #cfe9ff, transparent);
+  animation: bc-twinkle 5s ease-in-out infinite alternate;
+}
+
+.bc-moon {
+  position: absolute;
+  top: 8%;
+  right: 9%;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  box-shadow: inset -26px -14px 0 1px #f4f1d4;
+  filter: drop-shadow(0 0 14px rgba(244, 241, 212, 0.5));
+  transform: rotate(-18deg);
+}
+
+.bc-shooting {
+  position: absolute;
+}
+
+.bc-shooting--1 { animation: bc-shoot-pos-1 54s step-end infinite 3s; }
+
+.bc-shooting__streak {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 130px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.85) 90%, #ffffff 100%);
+  opacity: 0;
+}
+
+.bc-shooting__streak::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px 2px #ffffff;
+  transform: translateY(-50%);
+}
+
+.bc-shooting--1 .bc-shooting__streak { animation: bc-shoot 9s ease-in infinite 3s; }
+
+.bc-firefly {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--bc-neon-lime);
+  box-shadow: 0 0 8px 2px var(--bc-neon-lime);
+  opacity: 0;
+}
+
+.bc-firefly--1 { left: 18%; top: 72%; animation: bc-firefly 8s ease-in-out infinite; }
+.bc-firefly--2 { left: 48%; top: 62%; animation: bc-firefly 10s ease-in-out infinite 2.5s; }
+.bc-firefly--3 { left: 78%; top: 78%; animation: bc-firefly 9s ease-in-out infinite 4s; }
+
+/* ---------- GROUND (futuristic farm landscape) ---------- */
+.bc-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(150px, 22vh, 240px);
+}
+
+.bc-hills {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: filter 0.7s ease;
+}
+
+.bc-hill--back { fill: #7cbf5a; }
+.bc-hill--mid { fill: #5aa843; }
+.bc-hill--front { fill: #3f8a35; }
+
+.bc-ground--night .bc-hills {
+  filter: brightness(0.45) saturate(0.6) hue-rotate(-12deg);
+}
+
+.bc-struct {
+  position: absolute;
+}
+
+.bc-struct__body {
+  fill: #2f6b3f;
+  transition: fill 0.6s ease;
+}
+
+.bc-struct__window {
+  fill: #243a29;
+  transition: fill 0.6s ease;
+}
+
+.bc-ground--night .bc-struct__body { fill: #16323a; }
+.bc-ground--night .bc-struct__window { fill: #ffe79a; }
+
+.bc-turbine--1 { left: 16%; bottom: 86px; }
+.bc-turbine--2 { left: 29%; bottom: 60px; }
+.bc-dome { right: 26%; bottom: 52px; }
+.bc-antenna { right: 14%; bottom: 64px; }
+
+.bc-rotor { transform-box: fill-box; transform-origin: 50% 65.7%; }
+.bc-rotor--a { animation: bc-spin 7s linear infinite; }
+.bc-rotor--b { animation: bc-spin 9s linear infinite reverse; }
+
+.bc-beacon { fill: #ff5a5a; animation: bc-blink 2.4s step-end infinite; }
+
+.bc-planet {
+  position: absolute;
+  top: 20%;
+  left: 12%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #c4a3ff 0%, #7d57c6 65%, #4a2f86 100%);
+  box-shadow: 0 0 20px rgba(150, 110, 230, 0.4);
+}
+
+.bc-planet::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 104px;
+  height: 24px;
+  border: 3px solid rgba(196, 170, 255, 0.55);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-22deg);
+}
+
+/* ---------- KEYFRAMES ---------- */
+@keyframes bc-sun-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes bc-cloud-drift {
+  from { transform: translateX(-35vw) scale(var(--cloud-scale, 1)); }
+  to { transform: translateX(135vw) scale(var(--cloud-scale, 1)); }
+}
+
+@keyframes bc-twinkle {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+@keyframes bc-shoot {
+  0% { transform: translateX(0); opacity: 0; }
+  3% { opacity: 1; }
+  17% { opacity: 1; }
+  22% { transform: translateX(150vmax); opacity: 0; }
+  100% { transform: translateX(150vmax); opacity: 0; }
+}
+
+@keyframes bc-shoot-pos-1 {
+  0%      { top: 6%;  left: 86%; transform: rotate(158deg); }
+  16.66%  { top: 30%; left: 32%; transform: rotate(150deg); }
+  33.33%  { top: 46%; left: 90%; transform: rotate(166deg); }
+  50%     { top: 14%; left: 54%; transform: rotate(154deg); }
+  66.66%  { top: 54%; left: 38%; transform: rotate(162deg); }
+  83.33%  { top: 22%; left: 72%; transform: rotate(156deg); }
+}
+
+@keyframes bc-firefly {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 0.9; }
+  50% { transform: translate(22px, -18px); }
+  80% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(-10px, -30px); }
+}
+
+@keyframes bc-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bc-sun,
+  .bc-cloud,
+  .bc-stars,
+  .bc-shooting,
+  .bc-shooting__streak,
+  .bc-firefly,
+  .bc-rotor,
+  .bc-beacon {
+    animation: none;
+  }
+}

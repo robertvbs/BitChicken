@@ -1,0 +1,26 @@
+<div class="flex flex-col gap-2">
+  @if (isBusy()) {
+    <p-progressbar mode="indeterminate" styleClass="h-1" />
+    @if (phaseKey(); as key) {
+      <p class="text-sm text-surface-500 text-center m-0">{{ key | translate }}</p>
+    }
+  }
+  <div class="flex gap-2">
+    <p-button
+      [label]="ctaKey() | translate"
+      [icon]="ctaIcon()"
+      [loading]="isBusy()"
+      [disabled]="disabled() || isBusy()"
+      (onClick)="onConfirm()"
+      class="flex-1"
+    />
+    @if (showCancel()) {
+      <p-button
+        [label]="'common.cancel' | translate"
+        severity="secondary"
+        [text]="true"
+        (onClick)="onCancel()"
+      />
+    }
+  </div>
+</div>

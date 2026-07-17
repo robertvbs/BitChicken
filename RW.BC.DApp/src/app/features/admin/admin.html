@@ -1,0 +1,77 @@
+<p-confirmDialog />
+<p-toast />
+
+<div class="p-4 max-w-screen-xl mx-auto">
+  <h1 class="bc-title text-primary mb-2">{{ 'admin.title' | translate }}</h1>
+  <p class="text-surface-600 dark:text-surface-300 mb-6">{{ 'admin.subtitle' | translate }}</p>
+
+  @if (!web3.isConnected()) {
+    <p-message severity="warn" icon="pi pi-wallet" [text]="'admin.connectPrompt' | translate" styleClass="w-full" />
+  }
+
+  @if (loading()) {
+    <div class="flex justify-center p-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+    </div>
+  } @else {
+    <p-tabs>
+      <p-tablist>
+        <p-tab value="nft">{{ 'admin.tabs.nft' | translate }}</p-tab>
+        <p-tab value="catalog">{{ 'admin.tabs.catalog' | translate }}</p-tab>
+        <p-tab value="forge">{{ 'admin.tabs.forge' | translate }}</p-tab>
+        <p-tab value="vrf">{{ 'admin.tabs.vrf' | translate }}</p-tab>
+        <p-tab value="staking">{{ 'admin.tabs.staking' | translate }}</p-tab>
+        <p-tab value="token">{{ 'admin.tabs.token' | translate }}</p-tab>
+        <p-tab value="marketplace">{{ 'admin.tabs.marketplace' | translate }}</p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+        <p-tabpanel value="nft">
+          <app-admin-nft-panel
+            [nftPendingOwner]="nftPendingOwner()"
+            (reloadRequested)="loadAll()"
+          />
+        </p-tabpanel>
+
+        <p-tabpanel value="catalog">
+          <app-admin-editions-panel
+            [catalog]="catalog()"
+            (reloadRequested)="loadAll()"
+          />
+        </p-tabpanel>
+
+        <p-tabpanel value="forge">
+          <app-admin-forge-panel
+            [forgeOwner]="forgeOwner()"
+            [mintTiers]="mintTiers()"
+            (reloadRequested)="loadAll()"
+          />
+        </p-tabpanel>
+
+        <p-tabpanel value="vrf">
+          <app-admin-vrf-panel [vrfConfig]="vrfConfig()" />
+        </p-tabpanel>
+
+        <p-tabpanel value="staking">
+          <app-admin-staking-panel
+            [stakingConfig]="stakingConfig()"
+            [stakingPendingOwner]="stakingPendingOwner()"
+            (reloadRequested)="loadAll()"
+          />
+        </p-tabpanel>
+
+        <p-tabpanel value="token">
+          <app-admin-token-panel [tokenState]="tokenState()" />
+        </p-tabpanel>
+
+        <p-tabpanel value="marketplace">
+          <app-admin-marketplace-panel
+            [marketplaceFee]="marketplaceFee()"
+            [marketplacePendingOwner]="marketplacePendingOwner()"
+            (reloadRequested)="loadAll()"
+          />
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  }
+</div>

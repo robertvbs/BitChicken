@@ -1,0 +1,30 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+}
+
+.bc-placeholder__art {
+  width: 62%;
+  height: 62%;
+  fill: var(--rc);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+:host(.bc-rarity--common) {
+  --rc: var(--bc-rarity-common);
+}
+:host(.bc-rarity--uncommon) {
+  --rc: var(--bc-rarity-uncommon);
+}
+:host(.bc-rarity--rare) {
+  --rc: var(--bc-rarity-rare);
+}
+:host(.bc-rarity--epic) {
+  --rc: var(--bc-rarity-epic);
+}
+:host(.bc-rarity--legendary) {
+  --rc: var(--bc-rarity-legendary);
+}

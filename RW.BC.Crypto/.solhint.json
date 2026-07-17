@@ -1,0 +1,21 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "compiler-version": ["error", "^0.8.35"],
+    "func-visibility": ["warn", { "ignoreConstructors": true }],
+    "not-rely-on-time": "off",
+    "use-natspec": [
+      "error",
+      {
+        "author": { "enabled": false },
+        "param": {
+          "enabled": true,
+          "ignore": {
+            "function": ["_requireEditionExists", "_isEditionEligible"]
+          }
+        }
+      }
+    ],
+    "quotes": ["warn", "double"]
+  }
+}

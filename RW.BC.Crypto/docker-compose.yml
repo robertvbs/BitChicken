@@ -1,0 +1,69 @@
+# Testnet interna local — nó EVM (anvil/Foundry) para deploy e testes do BitChicken.
+#
+#   docker compose up -d        # sobe o nó em http://localhost:8545 (chainId 1337)
+#   npm run deploy:localhost    # implanta os contratos no nó
+#   docker compose down         # para o nó (estado persistido no volume)
+#
+# Contas dev determinísticas (mnemonic padrão do Foundry/Hardhat):
+#   account[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+#   privkey[0] = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+name: rw-bitchicken
+
+services:
+  bsc-localnet:
+    image: ghcr.io/foundry-rs/foundry:latest
+    container_name: ct_bsc-localnet
+    ports:
+      - '8545:8545'
+    # EVM "cancun" (mesma do projeto), chainId 1337, mineração por intervalo (1 bloco/s)
+    # para que carteiras (MetaMask) re-busquem o saldo automaticamente sem toggle,
+    # e persistência do estado no volume para sobreviver a restarts.
+    entrypoint: ['anvil']
+    command:
+      - '--host'
+      - '0.0.0.0'
+      - '--chain-id'
+      - '1337'
+      - '--block-time'
+      - '1'
+      - '--hardfork'
+      - 'cancun'
+      - '--mnemonic'
+      - 'test test test test test test test test test test test junk'
+      - '--accounts'
+      - '10'
+      - '--balance'
+      - '10000'
+      - '--state'
+      - '/data/anvil-state.json'
+    volumes:
+      - anvil-state:/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'cast',
+          'block-number',
+          '--rpc-url',
+          'http://localhost:8545',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Block explorer local (Otterscan) — navega blocos/txs/contratos da chain interna.
+  # http://localhost:5100  →  links de explorer da tela de Transparência apontam pra cá.
+  bsc-explorer:
+    image: otterscan/otterscan:latest
+    container_name: ct_bsc-explorer
+    ports:
+      - '5100:80'
+    environment:
+      # URL do nó usada pelo Otterscan NO NAVEGADOR (precisa ser alcançável do browser).
+      # Se o localhost não encaminhar (WSL), troque pelo IP do WSL aqui.
+      ERIGON_URL: 'http://localhost:8545'
+    depends_on:
+      - bsc-localnet
+
+volumes:
+  anvil-state:

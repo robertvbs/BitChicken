@@ -1,0 +1,29 @@
+@if (visible()) {
+  <div
+    class="fixed bottom-0 left-0 right-0 z-50 border-t border-surface bg-surface-0/95 dark:bg-surface-900/95 backdrop-blur-md shadow-lg"
+    role="region"
+    [attr.aria-label]="'consent.message' | translate"
+  >
+    <div class="mx-auto flex max-w-screen-xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="m-0 text-sm text-color-secondary">
+        {{ 'consent.message' | translate }}
+        <a routerLink="/legal" class="text-primary underline ml-1">{{ 'consent.learnMore' | translate }}</a>
+      </p>
+      <div class="flex shrink-0 gap-2">
+        <p-button
+          [label]="'consent.decline' | translate"
+          severity="secondary"
+          [text]="true"
+          size="small"
+          (onClick)="decline()"
+        />
+        <p-button
+          [label]="'consent.accept' | translate"
+          severity="primary"
+          size="small"
+          (onClick)="accept()"
+        />
+      </div>
+    </div>
+  </div>
+}

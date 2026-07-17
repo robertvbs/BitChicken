@@ -1,0 +1,50 @@
+<div class="flex flex-col gap-6 pt-4">
+
+  @if (marketplaceFee()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-surface-50 dark:bg-surface-800 rounded">
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.marketplace.feeSink' | translate }}</span><span class="font-mono text-xs break-all">{{ marketplaceFee()!.feeSink }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.marketplace.feeBps' | translate }}</span><span class="font-mono text-sm">{{ marketplaceFee()!.platformFeeBps }}</span></div>
+    </div>
+  }
+
+  <p-fieldset [legend]="'admin.marketplace.setPlatformFee' | translate" [toggleable]="true">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.marketplace.feeSink' | translate }}</label>
+        <input pInputText [ngModel]="marketplaceFeeSink()" (ngModelChange)="marketplaceFeeSink.set($event)" placeholder="0x..." />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.marketplace.feeBps' | translate }}</label>
+        <p-inputnumber [ngModel]="marketplaceFeeBps()" (ngModelChange)="marketplaceFeeBps.set($event ?? 0)" [min]="0" [max]="10000" />
+      </div>
+      <div class="md:col-span-2">
+        <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.marketplace.setPlatformFee" [disabled]="isBusy()" (confirm)="confirmMarketplaceSetFee()" />
+      </div>
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.marketplace.ownership' | translate">
+    <div class="flex flex-col gap-3">
+      <p class="text-sm">{{ 'admin.marketplace.pendingOwner' | translate }}: <code class="font-mono text-xs">{{ marketplacePendingOwner() || '-' }}</code></p>
+      @if (hasMarketplacePendingOwner()) {
+        <p-button
+          [label]="'admin.marketplace.acceptOwnership' | translate"
+          icon="pi pi-key"
+          severity="warn"
+          [disabled]="isBusy()"
+          (onClick)="marketplaceAcceptOwnership()"
+        />
+      } @else {
+        <p-message severity="info" [text]="'admin.marketplace.noPendingOwner' | translate" styleClass="w-full" />
+      }
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.marketplace.controls' | translate" [toggleable]="true">
+    <div class="flex flex-wrap gap-3">
+      <p-button [label]="'admin.pause' | translate" icon="pi pi-pause" severity="warn" [disabled]="isBusy()" (onClick)="confirmMarketplacePause()" />
+      <p-button [label]="'admin.unpause' | translate" icon="pi pi-play" severity="success" [disabled]="isBusy()" (onClick)="marketplaceUnpause()" />
+    </div>
+  </p-fieldset>
+
+</div>

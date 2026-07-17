@@ -1,0 +1,35 @@
+# Local scratch / temporary files (not versioned)
+.temp/
+
+# Personal/marketing material (used for external posts, not part of the OSS repo)
+/artigo-bitchicken/
+
+# Node dependencies (never versioned — huge and reproducible from package-lock.json)
+**/node_modules/
+
+# Secrets / local environment overrides — never commit real values
+.env
+.env.*
+!**/.env.example
+RW.BC.DApp/src/environments/environment.local.ts
+
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# Build / codegen output
+**/dist/
+**/.angular/
+**/.ponder/
+**/generated/
+
+# Solidity build artifacts
+**/artifacts/
+**/cache/
+
+# Coverage / test output
+**/coverage/
+**/TestResults/
+
+# IDE / user-specific
+*.user

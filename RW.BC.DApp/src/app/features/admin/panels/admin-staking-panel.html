@@ -1,0 +1,87 @@
+<div class="flex flex-col gap-6 pt-4">
+
+  @if (stakingConfig()) {
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-surface-50 dark:bg-surface-800 rounded">
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.staking.baseRate' | translate }}</span><span class="font-mono text-sm">{{ stakingConfig()!.baseRate }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.staking.wHealth' | translate }}</span><span class="font-mono text-sm">{{ stakingConfig()!.wHealth }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.staking.wSkill' | translate }}</span><span class="font-mono text-sm">{{ stakingConfig()!.wSkill }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.staking.wMorale' | translate }}</span><span class="font-mono text-sm">{{ stakingConfig()!.wMorale }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.staking.claimBurnBps' | translate }}</span><span class="font-mono text-sm">{{ stakingConfig()!.claimBurnBps }}</span></div>
+      <div><span class="text-xs text-surface-500 block">{{ 'admin.staking.idealMultiplierBps' | translate }}</span><span class="font-mono text-sm">{{ stakingConfig()!.idealPairMultiplierBps }}</span></div>
+    </div>
+  }
+
+  <p-fieldset [legend]="'admin.staking.setBaseRate' | translate" [toggleable]="true">
+    <div class="flex gap-4 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.staking.baseRate' | translate }}</label>
+        <p-inputnumber [ngModel]="stakingBaseRate()" (ngModelChange)="stakingBaseRate.set($event ?? 0)" [min]="0" />
+      </div>
+      <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.staking.setBaseRate" [disabled]="isBusy()" (confirm)="stakingSetBaseRate()" />
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.staking.setWeights' | translate" [toggleable]="true">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.staking.wHealth' | translate }}</label>
+        <p-inputnumber [ngModel]="stakingWHealth()" (ngModelChange)="stakingWHealth.set($event ?? 0)" [min]="0" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.staking.wSkill' | translate }}</label>
+        <p-inputnumber [ngModel]="stakingWSkill()" (ngModelChange)="stakingWSkill.set($event ?? 0)" [min]="0" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.staking.wMorale' | translate }}</label>
+        <p-inputnumber [ngModel]="stakingWMorale()" (ngModelChange)="stakingWMorale.set($event ?? 0)" [min]="0" />
+      </div>
+      <div class="md:col-span-3">
+        <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.staking.setWeights" [disabled]="isBusy()" (confirm)="stakingSetWeights()" />
+      </div>
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.staking.burnAndMultiplier' | translate" [toggleable]="true">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.staking.claimBurnBps' | translate }}</label>
+        <p-inputnumber [ngModel]="stakingClaimBurnBps()" (ngModelChange)="stakingClaimBurnBps.set($event ?? 0)" [min]="0" [max]="10000" />
+      </div>
+      <div>
+        <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.staking.setClaimBurnBps" [disabled]="isBusy()" (confirm)="stakingSetClaimBurnBps()" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">{{ 'admin.staking.idealMultiplierBps' | translate }}</label>
+        <p-inputnumber [ngModel]="stakingIdealMultiplierBps()" (ngModelChange)="stakingIdealMultiplierBps.set($event ?? 20000)" [min]="10000" />
+      </div>
+      <div>
+        <app-transaction-widget [phase]="tx.txPhase()" ctaKey="admin.staking.setIdealMultiplier" [disabled]="isBusy()" (confirm)="stakingSetIdealPairMultiplierBps()" />
+      </div>
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.staking.ownership' | translate">
+    <div class="flex flex-col gap-3">
+      <p class="text-sm">{{ 'admin.staking.pendingOwner' | translate }}: <code class="font-mono text-xs">{{ stakingPendingOwner() || '-' }}</code></p>
+      @if (hasStakingPendingOwner()) {
+        <p-button
+          [label]="'admin.staking.acceptOwnership' | translate"
+          icon="pi pi-key"
+          severity="warn"
+          [disabled]="isBusy()"
+          (onClick)="stakingAcceptOwnership()"
+        />
+      } @else {
+        <p-message severity="info" [text]="'admin.staking.noPendingOwner' | translate" styleClass="w-full" />
+      }
+    </div>
+  </p-fieldset>
+
+  <p-fieldset [legend]="'admin.staking.controls' | translate" [toggleable]="true">
+    <div class="flex flex-wrap gap-3">
+      <p-button [label]="'admin.pause' | translate" icon="pi pi-pause" severity="warn" [disabled]="isBusy()" (onClick)="confirmStakingPause()" />
+      <p-button [label]="'admin.unpause' | translate" icon="pi pi-play" severity="success" [disabled]="isBusy()" (onClick)="stakingUnpause()" />
+    </div>
+  </p-fieldset>
+
+</div>

@@ -1,0 +1,51 @@
+<section class="flex flex-col gap-6 py-4">
+  <h1 class="bc-title text-color">{{ 'legal.title' | translate }}</h1>
+
+  <p-card>
+    <ng-template #title>
+      <div class="flex items-center gap-2">
+        <i class="pi pi-question-circle text-primary"></i>
+        <span>{{ 'legal.faq.title' | translate }}</span>
+      </div>
+    </ng-template>
+    <div class="flex flex-col gap-2">
+      @for (entry of faq; track entry.question) {
+        <details class="rounded-md border border-surface p-3">
+          <summary class="cursor-pointer font-semibold text-color">{{ entry.question | translate }}</summary>
+          <p class="mt-2 text-sm text-muted-color">{{ entry.answer | translate }}</p>
+        </details>
+      }
+    </div>
+  </p-card>
+
+  <p-card>
+    <ng-template #title>
+      <div class="flex items-center gap-2">
+        <i class="pi pi-exclamation-triangle text-primary"></i>
+        <span>{{ 'legal.risk.title' | translate }}</span>
+      </div>
+    </ng-template>
+    <ul class="flex flex-col gap-2 text-sm text-muted-color">
+      @for (risk of risks; track risk) {
+        <li class="flex items-start gap-2">
+          <i class="pi pi-angle-right text-primary mt-1"></i>
+          <span>{{ risk | translate }}</span>
+        </li>
+      }
+    </ul>
+  </p-card>
+
+  <p-card>
+    <ng-template #title>
+      <div class="flex items-center gap-2">
+        <i class="pi pi-file text-primary"></i>
+        <span>{{ 'legal.terms.title' | translate }}</span>
+      </div>
+    </ng-template>
+    <div class="flex flex-col gap-3 text-sm text-muted-color">
+      @for (paragraph of terms; track paragraph) {
+        <p>{{ paragraph | translate }}</p>
+      }
+    </div>
+  </p-card>
+</section>

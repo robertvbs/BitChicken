@@ -1,0 +1,18 @@
+[profile.default]
+src = "contracts"
+test = "foundry-test"
+out = "out-forge"
+cache_path = "cache-forge"
+libs = ["node_modules", "lib"]
+solc = "0.8.35"
+evm_version = "cancun"
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+remappings = [
+  "@openzeppelin/contracts@4.9.6/=node_modules/@openzeppelin/contracts-4.9.6/",
+  "@openzeppelin/contracts-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/",
+  "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+  "@chainlink/=node_modules/@chainlink/",
+  "forge-std/=lib/forge-std/src/",
+]

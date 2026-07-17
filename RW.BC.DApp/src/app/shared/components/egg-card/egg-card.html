@@ -1,0 +1,39 @@
+<p-card
+  styleClass="h-full"
+  [style.--p-card-body-padding]="'0.65rem 0.8rem 0.85rem'"
+  [style.--p-card-body-gap]="'0.5rem'"
+  [style.--p-card-border-radius]="'0.95rem'"
+  [style.overflow]="'hidden'"
+>
+  <ng-template #header>
+    <div class="bc-eggcard__head">
+      <span class="bc-eggcard__flag">{{ levelLabel() }} {{ level() }}</span>
+      @defer (on viewport; prefetch on idle) {
+        <app-egg class="bc-eggcard__egg" src="egg/base.webp" [level]="level()" />
+      } @placeholder {
+        <div class="bc-eggcard__egg bc-eggcard__egg-ph"></div>
+      }
+    </div>
+  </ng-template>
+
+  <div class="bc-eggcard__price">
+    {{ price() }}
+    <small
+      class="bc-eggcard__bnb"
+      [pTooltip]="fiat()"
+      [tooltipDisabled]="!fiat()"
+      tooltipPosition="top"
+    >BNB</small>
+  </div>
+
+  @if (ctaLabel()) {
+    <button
+      type="button"
+      class="bc-eggcard__cta w-full"
+      [disabled]="ctaDisabled()"
+      (click)="cta.emit()"
+    >
+      {{ ctaLabel() }}
+    </button>
+  }
+</p-card>

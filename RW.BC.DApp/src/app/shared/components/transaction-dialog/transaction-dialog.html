@@ -1,0 +1,22 @@
+<p-dialog
+  [(visible)]="visible"
+  [header]="headerKey() | translate"
+  [modal]="true"
+  [closable]="isIdle()"
+  [styleClass]="styleClass()"
+>
+  <div class="flex flex-col gap-4">
+    <ng-content />
+  </div>
+  <div class="pt-3">
+    <app-transaction-widget
+      [phase]="phase()"
+      [ctaKey]="ctaKey()"
+      [ctaIcon]="ctaIcon()"
+      [disabled]="ctaDisabled()"
+      [cancelable]="cancelable()"
+      (confirm)="confirm.emit()"
+      (cancel)="cancel.emit()"
+    />
+  </div>
+</p-dialog>
