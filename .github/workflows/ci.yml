@@ -207,3 +207,4 @@ jobs:
         working-directory: RW.BC.DApp
       - run: npm run build
         working-directory: RW.BC.DApp
+
